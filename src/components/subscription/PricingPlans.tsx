@@ -12,14 +12,14 @@ const plans = [
     price: '$9',
     description: 'Perfect for small projects',
     features: ['Basic Features', '5 Projects', 'Community Support'],
-    priceId: 'price_starter',
+    priceId: 'price_1QOJpkBl43NGfiYUMA6G2YU', // Replace with your actual Stripe Price ID for Starter plan
   },
   {
     name: 'Pro',
     price: '$29',
     description: 'For growing businesses',
     features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
-    priceId: 'price_pro',
+    priceId: 'price_1QOJpkBl43NGfiYUMA6G2YU', // Replace with your actual Stripe Price ID for Pro plan
   },
 ];
 
