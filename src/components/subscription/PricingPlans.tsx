@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { stripePromise } from '@/lib/stripe';
 import { useToast } from '@/components/ui/use-toast';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const plans = [
   {
@@ -40,26 +40,41 @@ export const PricingPlans = () => {
 
     setLoading(true);
     try {
-      const functions = getFunctions();
-      const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+      // Create a new checkout session document
+      const checkoutSessionRef = doc(db, 'users', user.uid, 'checkout_sessions', Date.now().toString());
       
-      const { data: { sessionId } } = await createCheckoutSession({ priceId });
-      
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error('Stripe failed to initialize');
+      // The extension will detect this document and create a checkout session
+      await setDoc(checkoutSessionRef, {
+        price: priceId,
+        success_url: window.location.origin + '/success',
+        cancel_url: window.location.origin,
+      });
 
-      const { error } = await stripe.redirectToCheckout({ sessionId });
+      // Listen to the document for the session URL
+      const unsubscribe = onSnapshot(checkoutSessionRef, (snap) => {
+        const { error, url } = snap.data() || {};
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+          setLoading(false);
+        }
+        if (url) {
+          window.location.assign(url);
+        }
+      });
+
+      // Cleanup subscription when component unmounts
+      return () => unsubscribe();
       
-      if (error) {
-        throw error;
-      }
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
