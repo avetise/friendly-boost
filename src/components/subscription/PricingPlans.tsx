@@ -12,14 +12,14 @@ const plans = [
     price: '$9',
     description: 'Perfect for small projects',
     features: ['Basic Features', '5 Projects', 'Community Support'],
-    priceId: 'price_1QOgMyBl43NGfiYUEofMjXw7', // Replace with your actual Stripe Price ID for Starter plan
+    priceId: 'price_1QOgMyBl43NGfiYUEofMjXw7',
   },
   {
     name: 'Pro',
     price: '$29',
     description: 'For growing businesses',
     features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
-    priceId: 'price_1QOgNEBl43NGfiYUchN0fA6M', // Replace with your actual Stripe Price ID for Pro plan
+    priceId: 'price_1QOgNEBl43NGfiYUchN0fA6M',
   },
 ];
 
@@ -54,9 +54,10 @@ export const PricingPlans = () => {
       const unsubscribe = onSnapshot(checkoutSessionRef, (snap) => {
         const { error, url } = snap.data() || {};
         if (error) {
+          console.error('Checkout session error:', error);
           toast({
             title: "Error",
-            description: error.message,
+            description: error.message || "Failed to create checkout session",
             variant: "destructive",
           });
           setLoading(false);
@@ -70,6 +71,7 @@ export const PricingPlans = () => {
       return () => unsubscribe();
       
     } catch (error: any) {
+      console.error('Subscription error:', error);
       toast({
         title: "Error",
         description: error.message || "An unexpected error occurred",
