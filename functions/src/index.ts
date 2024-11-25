@@ -8,8 +8,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
 });
 
-export const createCheckoutSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createCheckoutSession = functions.https.onCall(async (data: { priceId: string }, context: functions.https.CallableContext) => {
+  if (!context?.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'You must be logged in to create a checkout session'
@@ -47,9 +47,12 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
     });
 
     return { sessionId: session.id };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Checkout session creation error:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof Error) {
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+    throw new functions.https.HttpsError('internal', 'An unexpected error occurred');
   }
 });
 
@@ -85,6 +88,10 @@ export const handleSubscriptionStatusChange = functions.https.onRequest(async (r
     res.json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
-    res.status(400).send(`Webhook Error: ${error.message}`);
+    if (error instanceof Error) {
+      res.status(400).send(`Webhook Error: ${error.message}`);
+    } else {
+      res.status(400).send('Webhook Error: Unknown error occurred');
+    }
   }
 });
