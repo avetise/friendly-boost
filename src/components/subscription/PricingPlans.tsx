@@ -8,18 +8,25 @@ import { db } from '@/lib/firebase';
 
 const plans = [
   {
-    name: 'Starter',
-    price: '$9',
+    name: 'Basic',
+    price: '$5',
     description: 'Perfect for small projects',
     features: ['Basic Features', '5 Projects', 'Community Support'],
-    priceId: 'price_1QOgMyBl43NGfiYUEofMjXw7',
+    priceId: 'price_1OubcUBsWcSPhj7FIozkfeGh',
   },
   {
     name: 'Pro',
-    price: '$29',
+    price: '$20',
     description: 'For growing businesses',
     features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
-    priceId: 'price_1QOgNEBl43NGfiYUchN0fA6M',
+    priceId: 'price_1OubchBsWcSPhj7FZGoenAWG',
+  },
+  {
+    name: 'Enterprise',
+    price: '$20',
+    description: 'For growing businesses',
+    features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
+    priceId: 'price_1Q1fbrBsWcSPhj7Fm7KkP1T6',
   },
 ];
 
@@ -38,11 +45,18 @@ export const PricingPlans = () => {
       return;
     }
 
+
+
     setLoading(true);
     try {
       // Create a new checkout session document
       const checkoutSessionRef = doc(db, 'users', user.uid, 'checkout_sessions', Date.now().toString());
       
+
+      
+    console.log('User ID:', user?.uid);
+    console.log('Database reference:', checkoutSessionRef.path);
+
       // The extension will detect this document and create a checkout session
       await setDoc(checkoutSessionRef, {
         price: priceId,
@@ -61,24 +75,28 @@ export const PricingPlans = () => {
             variant: "destructive",
           });
           setLoading(false);
+          unsubscribe(); // Cleanup
         }
         if (url) {
           window.location.assign(url);
+          unsubscribe(); // Cleanup
         }
       });
+      
 
       // Cleanup subscription when component unmounts
       return () => unsubscribe();
       
     } catch (error: any) {
-      console.error('Subscription error:', error);
+      console.error('Error during subscription process:', error);
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred",
+        description: error.message || "An unexpected error occurred during subscription.",
         variant: "destructive",
       });
       setLoading(false);
     }
+    
   };
 
   return (
