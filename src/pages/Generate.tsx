@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -9,12 +9,10 @@ import { Card } from '@/components/ui/card';
 import { Copy as CopyIcon } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { MainNav } from '@/components/navigation/MainNav';
-import { handleFirebaseError } from '@/utils/firebaseErrorHandler';
-import { useToast } from '@/components/ui/use-toast';
 
 interface FormData {
-  cv: string;
-  jd: string;
+    cv: string;
+    jd: string;
 }
 
 const Generate = () => {
@@ -22,147 +20,109 @@ const Generate = () => {
   const [resultMessage, setResultMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [useSameResume, setUseSameResume] = useState<boolean>(false);
+  
   const { user } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     const updateReferralCode = async () => {
-      if (!user) return;
-      
       const referralCode = localStorage.getItem('referralCode');
       if (referralCode) {
-        const userDocRef = doc(db, 'users', user.uid);
-        try {
-          await updateDoc(userDocRef, {
-            referral: referralCode,
-          });
-          localStorage.removeItem('referralCode');
-        } catch (error) {
-          console.error("Error updating referral:", error);
-          toast({
-            title: "Error",
-            description: handleFirebaseError(error),
-            variant: "destructive",
-          });
-        }
+          const userDocRef = doc(db, 'users', user.uid);
+          try {
+              await updateDoc(userDocRef, {
+                  referral: referralCode,
+              });
+
+              localStorage.removeItem('referralCode');
+          } catch (error) {
+              console.error("Error updating document:", error);
+          }
       }
     };
 
     updateReferralCode();
-  }, [user, toast]);
+  }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleCheckboxChange = async (checked: boolean) => {
-    setUseSameResume(checked);
-    if (checked && user) {
-      try {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setFormData(prev => ({ ...prev, cv: userDoc.data().resume || '' }));
-        }
-      } catch (error) {
-        console.error("Error fetching resume:", error);
-        toast({
-          title: "Error",
-          description: handleFirebaseError(error),
-          variant: "destructive",
-        });
-        setUseSameResume(false);
-      }
+  const handleCheckboxChange = (e) => {
+    setUseSameResume(e.target.checked);
+    if (e.target.checked) {
+      fetchAndSetResume();
     } else {
-      setFormData(prev => ({ ...prev, cv: '' }));
+      setFormData({ ...formData, cv: '' });
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be signed in to generate a cover letter.",
-        variant: "destructive",
-      });
-      return;
+  const fetchAndSetResume = async () => {
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        setFormData({ ...formData, cv: userDoc.data().resume || '' });
+      } else {
+        setUseSameResume(false);
+      }
+    } catch (error) {
+      console.error("Error fetching resume: ", error);
     }
-    
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     
     try {
-      const serverURL = "https://jobfly.onrender.com/generate";
+      const serverURL = "https://jobfly.onrender.com/generate"; // Replace with your Render.com app URL
       const response = await fetch(serverURL, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `ApiKey ${process.env.REACT_APP_SECUREKEY}` },
         body: JSON.stringify({
-          cv: formData.cv,
-          jd: formData.jd
+          cv: formData.cv, 
+          jd: formData.jd  
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const result = await response.json();
+        let message = result.result;
+
+        message = message.replace(/\[Your Name\]/g, user.displayName);
+        message = message.replace(/\[Email Address\]/g, user.email);
+        message = message.replace(/\[Your Email\]/g, user.email);
+
+        setResultMessage(message);
+        await addDoc(collection(db, "coverletters"), {
+          email: user.email,
+          message: message,
+          createdAt: new Date()
+        });
+
+      } else {
+        console.error("Error calling API");
+        alert("Error generating cover letter.");
       }
-
-      const result = await response.json();
-      let message = result.result;
-
-      // Replace placeholders with user data
-      message = message.replace(/\[Your Name\]/g, user.displayName || '');
-      message = message.replace(/\[Email Address\]/g, user.email || '');
-      message = message.replace(/\[Your Email\]/g, user.email || '');
-
-      setResultMessage(message);
-
-      // Save to Firebase
-      await addDoc(collection(db, "coverletters"), {
-        email: user.email,
-        message: message,
-        createdAt: new Date()
-      });
-
-      // Update resume in user profile if needed
-      if (!useSameResume && formData.cv.length > 100) {
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { resume: formData.cv });
-      }
-
-      toast({
-        title: "Success",
-        description: "Cover letter generated successfully!",
-      });
     } catch (error) {
       console.error("Error:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate cover letter",
-        variant: "destructive",
-      });
+      alert("Error generating cover letter.");
     } finally {
       setIsLoading(false);
+    }
+
+    if (!useSameResume && formData.cv.length > 100) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, { resume: formData.cv });
     }
   };
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(resultMessage);
-      toast({
-        title: "Success",
-        description: "Copied to clipboard!",
-      });
     } catch (err) {
-      console.error('Failed to copy:', err);
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+      console.error('Failed to copy: ', err);
     }
   };
 
