@@ -9,10 +9,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-interface ViewParams {
-  id: string;
-}
-
 interface DocumentData {
   message: string;
   email: string;
@@ -20,7 +16,7 @@ interface DocumentData {
 
 const View = () => {
   const [record, setRecord] = useState<string>('');
-  const { id } = useParams<ViewParams>();
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
 
