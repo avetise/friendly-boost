@@ -19,14 +19,24 @@ const app = initializeApp(firebaseConfig);
 // Initialize services
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-export const functions = getFunctions(app);
+
+// Initialize Functions only if the service is available
+let functions;
+try {
+  functions = getFunctions(app);
+} catch (error) {
+  console.warn('Firebase Functions service is not available:', error);
+}
+export { functions };
 
 // If running locally, connect to emulators
 if (import.meta.env.DEV) {
   try {
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectAuthEmulator(auth, 'http://localhost:9099');
-    connectFunctionsEmulator(functions, 'localhost', 5001);
+    if (functions) {
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+    }
     console.log('Connected to Firebase emulators');
   } catch (error) {
     console.error('Failed to connect to emulators:', error);
