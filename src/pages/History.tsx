@@ -19,6 +19,7 @@ interface HistoryItem {
   createdAt: {
     toDate: () => Date;
   };
+  email: string;
 }
 
 const History = () => {
@@ -35,12 +36,17 @@ const History = () => {
         orderBy("createdAt", "desc")
       );
 
-      const querySnapshot = await getDocs(q);
-      const historyData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setHistory(historyData);
+      try {
+        const querySnapshot = await getDocs(q);
+        const historyData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt // Ensure createdAt is properly mapped
+        })) as HistoryItem[];
+        setHistory(historyData);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      }
     };
 
     fetchHistory();
