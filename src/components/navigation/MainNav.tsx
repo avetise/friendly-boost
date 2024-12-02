@@ -14,6 +14,7 @@ export const MainNav = () => {
         <nav className="flex items-center space-x-4">
           <Link to="/generate" className="hover:text-foreground transition-colors">Generate</Link>
           <Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
+          <Link to="/history" className="hover:text-foreground transition-colors">History</Link>
           <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
           <span>{user.email}</span>
           <button

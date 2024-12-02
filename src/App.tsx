@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Generate from "./pages/Generate";
 import Dashboard from "./pages/Dashboard";
+import History from "./pages/History";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
                 </ProtectedRoute>
               }
             />
