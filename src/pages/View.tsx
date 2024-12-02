@@ -1,91 +1,87 @@
-import React, { useState, useContext, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { AuthContext } from './Auth'; // Adjust the import path as needed
-import { Container, Grid, Paper, TextField, Tooltip, Box, IconButton } from '@mui/material';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import { styled } from '@mui/material/styles';
+import { useAuth } from '@/contexts/AuthContext';
+import { MainNav } from '@/components/navigation/MainNav';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Copy } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-import { getFirestore, doc,     getDoc } from 'firebase/firestore';
+interface ViewParams {
+  id: string;
+}
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
+interface DocumentData {
+  message: string;
+  email: string;
+}
 
 const View = () => {
-    const [record, setRecord] = useState('');
-    const { id } = useParams(); // Get the id parameter from the URL
-    const { authUser } = useContext(AuthContext);
-    const db = getFirestore();
-  
-    useEffect(() => {
-      const fetchRecord = async () => {
-        const docRef = doc(db, "coverletters", id);
-        const docSnap = await getDoc(docRef);
-  
-        if (docSnap.exists() && docSnap.data().email == authUser.data.email) {
-          setRecord(docSnap.data().message);
-        } else {
-          console.log("No such document!");
-          setRecord('No record found for this ID.');
-        }
-      };
-  
-      fetchRecord();
-    }, [id, db]);
+  const [record, setRecord] = useState<string>('');
+  const { id } = useParams<ViewParams>();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const fetchRecord = async () => {
-    const docRef = doc(db, "coverletters", id);
-    const docSnap = await getDoc(docRef);
+  useEffect(() => {
+    const fetchRecord = async () => {
+      if (!id || !user) return;
 
-    if (docSnap.exists()) {
-      setRecord(docSnap.data().message);
-    } else {
-      console.log("No such document!");
-      setRecord('No record found for this ID.');
-    }
-  };
+      const docRef = doc(db, "coverletters", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists() && docSnap.data().email === user.email) {
+        const data = docSnap.data() as DocumentData;
+        setRecord(data.message);
+      } else {
+        setRecord('No record found for this ID.');
+      }
+    };
+
+    fetchRecord();
+  }, [id, user]);
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(record);
+      toast({
+        title: "Copied!",
+        description: "Content copied to clipboard",
+      });
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      toast({
+        title: "Error",
+        description: "Failed to copy content",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ flexGrow: 1, my: 4 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Item>
-              {record && (
-                <>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Tooltip title="Copy">
-                      <IconButton aria-label="copy" onClick={copyToClipboard}>
-                        <ContentPasteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <TextField
-                    fullWidth
-                    multiline
-                    readOnly
-                    value={record}
-                    variant="outlined"
-                    margin="normal"
-                  />
-                </>
-              )}
-            </Item>
-          </Grid>
-        </Grid>
-      </Box>
-    </Container>
+    <div className="min-h-screen bg-background">
+      <MainNav />
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <h2 className="text-2xl font-bold">Cover Letter</h2>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={copyToClipboard}
+              className="h-8 w-8"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="whitespace-pre-wrap rounded-lg border bg-muted p-4">
+              {record}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
