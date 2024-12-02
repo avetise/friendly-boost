@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,32 +18,3 @@ const app = initializeApp(firebaseConfig);
 // Initialize services
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-
-// Initialize Functions only if the service is available
-let functions;
-try {
-  functions = getFunctions(app);
-} catch (error) {
-  console.warn('Firebase Functions service is not available:', error);
-}
-export { functions };
-
-// If running locally, connect to emulators
-if (import.meta.env.DEV) {
-  try {
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectAuthEmulator(auth, 'http://localhost:9099');
-    if (functions) {
-      connectFunctionsEmulator(functions, 'localhost', 5001);
-    }
-    console.log('Connected to Firebase emulators');
-  } catch (error) {
-    console.error('Failed to connect to emulators:', error);
-  }
-}
-
-// Debug Firebase initialization
-console.log('Firebase initialized with config:', {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain
-});
