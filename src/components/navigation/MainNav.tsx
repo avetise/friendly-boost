@@ -1,6 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
+import { Button } from "@/components/ui/button";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  History, 
+  CreditCard,
+  Users,
+  LogOut
+} from 'lucide-react';
 
 export const MainNav = () => {
   const { user } = useAuth();
@@ -8,23 +17,73 @@ export const MainNav = () => {
   if (!user) return null;
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">JobFly</h1>
-        <nav className="flex items-center space-x-4">
-          <Link to="/generate" className="hover:text-foreground transition-colors">Generate</Link>
-          <Link to="/history" className="hover:text-foreground transition-colors">History</Link>
-          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-          {/* <Link to="/referral" className="hover:text-foreground transition-colors">Referral</Link> */}
-          <Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-          <span>{user.displayName}</span>
-          <button
-            onClick={() => auth.signOut()}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Sign Out
-          </button>
-        </nav>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex h-14 items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              JobFly
+            </span>
+          </Link>
+
+          <nav className="flex items-center space-x-6">
+            <Link 
+              to="/generate" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Generate</span>
+            </Link>
+
+            <Link 
+              to="/history" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <History className="h-4 w-4" />
+              <span>History</span>
+            </Link>
+
+            <Link 
+              to="/pricing" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <CreditCard className="h-4 w-4" />
+              <span>Pricing</span>
+            </Link>
+
+            {/* <Link 
+              to="/referral" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <Users className="h-4 w-4" />
+              <span>Referral</span>
+            </Link> */}
+
+            <Link 
+              to="/dashboard" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+
+            <div className="flex items-center space-x-4 border-l pl-6 ml-2">
+              <span className="text-sm font-medium">
+                {user.displayName}
+              </span>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => auth.signOut()}
+                className="flex items-center space-x-2 text-sm hover:text-primary"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </Button>
+            </div>
+          </nav>
+        </div>
       </div>
     </header>
   );
