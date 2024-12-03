@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchActiveUsers } from '@/lib/firestore';
 import { MainNav } from '@/components/navigation/MainNav';
+import { Card } from "@/components/ui/card";
+import { Users, FileText, Calendar } from 'lucide-react';
 
 interface ActiveUser {
   email: string;
@@ -34,43 +36,82 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       <MainNav />
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          <div className="rounded-lg bg-card p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Total Unique Users: {activeUsersData.totalUniqueUsers}
-            </h2>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           </div>
 
-          <div className="rounded-lg bg-card p-6">
-            <h2 className="text-2xl font-bold mb-4 text-center">
-              20 Most Active Users
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-2 text-left">Rank</th>
-                    <th className="px-4 py-2 text-left">Email</th>
-                    <th className="px-4 py-2 text-left">Cover Letters</th>
-                    <th className="px-4 py-2 text-left">Last Used</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeUsersData.activeUsers.map((user, index) => (
-                    <tr key={user.email} className="border-b">
-                      <td className="px-4 py-2">{index + 1}</td>
-                      <td className="px-4 py-2">{user.email}</td>
-                      <td className="px-4 py-2">{user.documentCount}</td>
-                      <td className="px-4 py-2">{user.lastActive.slice(0, 10)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="p-6 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Users</p>
+                  <p className="text-2xl font-bold">{activeUsersData.totalUniqueUsers}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Documents</p>
+                  <p className="text-2xl font-bold">
+                    {activeUsersData.activeUsers.reduce((acc, user) => acc + user.documentCount, 0)}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:bg-muted/50 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Today</p>
+                  <p className="text-2xl font-bold">
+                    {activeUsersData.activeUsers.filter(user => 
+                      new Date(user.lastActive).toDateString() === new Date().toDateString()
+                    ).length}
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
+
+          <Card className="overflow-hidden">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold">Active Users</h2>
+            </div>
+            <div className="divide-y">
+              {activeUsersData.activeUsers.map((user, index) => (
+                <div key={user.email} className="p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary">#{index + 1}</span>
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.documentCount} documents • Last active {new Date(user.lastActive).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       </div>
     </div>

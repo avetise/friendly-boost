@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
+import { FileText, Send } from 'lucide-react';
 
 const Generate = () => {
   const { user } = useAuth();
@@ -121,66 +122,87 @@ const Generate = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainNav />
-      <Card className="p-6">
-      <div className="container max-w-3xl mx-auto py-8">
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold text-center">Cover Letter</h1>
-              <p><strong>Name: </strong>{user?.displayName}</p>
-              <p><strong>Email: </strong>{user?.email}</p>
+      <div className="container max-w-3xl mx-auto px-4 py-8">
+        <Card className="p-6 space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">Create Cover Letter</h1>
+            <p className="text-muted-foreground">Generate a personalized cover letter based on your resume and job description</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  <label htmlFor="useSameResume" className="text-sm font-medium">
+                    Use Previous Resume
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="useSameResume"
+                    checked={useSameResume}
+                    onChange={handleCheckboxChange}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="useSameResume" className="text-sm text-muted-foreground">
+                    Use the resume from my previous submission
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Resume</label>
+                <Textarea
+                  name="cv"
+                  placeholder="Paste your resume here"
+                  value={formData.cv}
+                  onChange={(e) => setFormData({ ...formData, cv: e.target.value })}
+                  className="min-h-[150px] resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Job Description</label>
+                <Textarea
+                  name="jd"
+                  placeholder="Paste the job description here"
+                  value={formData.jd}
+                  onChange={(e) => setFormData({ ...formData, jd: e.target.value })}
+                  className="min-h-[150px] resize-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <input
-                type="checkbox"
-                id="useSameResume"
-                checked={useSameResume}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="useSameResume">Use Same Resume</label>
-            </div>
-
-            <Textarea
-              name="cv"
-              placeholder="Paste resume here"
-              value={formData.cv}
-              onChange={(e) => setFormData({ ...formData, cv: e.target.value })}
-              className="min-h-[150px]"
-            />
-
-            <Textarea
-              name="jd"
-              placeholder="Paste job description here"
-              value={formData.jd}
-              onChange={(e) => setFormData({ ...formData, jd: e.target.value })}
-              className="min-h-[150px]"
-            />
-
-            <div className="flex justify-center">
+            <div className="flex justify-end">
               {isLoading ? (
-                <Loader />
+                <Button disabled className="w-full sm:w-auto">
+                  <Loader className="mr-2" />
+                  Generating...
+                </Button>
               ) : (
-                <Button type="submit" disabled={isLoading}>
-                  Write Cover Letter
+                <Button type="submit" className="w-full sm:w-auto">
+                  <Send className="w-4 h-4 mr-2" />
+                  Generate Cover Letter
                 </Button>
               )}
             </div>
-          </div>
+          </form>
 
           {resultMessage && (
-            <div>
-              <textarea
-                readOnly
-                value={resultMessage}
-                className="min-h-[200px] w-full"
-              />
-            </div>
+            <Card className="p-4 mt-6 bg-muted/50">
+              <h3 className="font-medium mb-2">Generated Cover Letter</h3>
+              <div className="bg-card p-4 rounded-md">
+                <pre className="whitespace-pre-wrap font-sans text-sm">
+                  {resultMessage}
+                </pre>
+              </div>
+            </Card>
           )}
-        </form>
+        </Card>
       </div>
-      </Card>
-      </div>
+    </div>
   );
 };
 
