@@ -4,11 +4,12 @@ import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from 'fireba
 import { db } from '@/lib/firebase';
 import { MainNav } from '@/components/navigation/MainNav';
 import { useToast } from '@/components/ui/use-toast';
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { FileText, Send } from 'lucide-react';
+import { GenerateForm } from '@/components/generate/GenerateForm';
+import { GenerateResult } from '@/components/generate/GenerateResult';
 
 const Generate = () => {
   const { user } = useAuth();
@@ -86,19 +87,16 @@ const Generate = () => {
       const result = await response.json();
       let message = result.result;
 
-      // Replace placeholders with user data
       message = message.replace(/\[Your Name\]/g, user.displayName || '');
       message = message.replace(/\[Email Address\]/g, user.email || '');
       setResultMessage(message);
 
-      // Save cover letter to Firebase
       await addDoc(collection(db, "coverletters"), {
         email: user.email,
         message: message,
         createdAt: new Date(),
       });
 
-      // Save the resume if not using the previous one
       if (!useSameResume && formData.cv.length > 100) {
         const userDocRef = doc(db, 'users', user.uid);
         await updateDoc(userDocRef, { resume: formData.cv });
@@ -149,27 +147,11 @@ const Generate = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Resume</label>
-                <Textarea
-                  name="cv"
-                  placeholder="Paste your resume here"
-                  value={formData.cv}
-                  onChange={(e) => setFormData({ ...formData, cv: e.target.value })}
-                  className="min-h-[150px] resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Job Description</label>
-                <Textarea
-                  name="jd"
-                  placeholder="Paste the job description here"
-                  value={formData.jd}
-                  onChange={(e) => setFormData({ ...formData, jd: e.target.value })}
-                  className="min-h-[150px] resize-none"
-                />
-              </div>
+              <GenerateForm 
+                formData={formData}
+                setFormData={setFormData}
+                useSameResume={useSameResume}
+              />
             </div>
 
             <div className="flex justify-end">
@@ -187,16 +169,7 @@ const Generate = () => {
             </div>
           </form>
 
-          {resultMessage && (
-            <Card className="p-4 mt-6 bg-muted/50">
-              <h3 className="font-medium mb-2">Generated Cover Letter</h3>
-              <div className="bg-card p-4 rounded-md">
-                <pre className="whitespace-pre-wrap font-sans text-sm">
-                  {resultMessage}
-                </pre>
-              </div>
-            </Card>
-          )}
+          <GenerateResult resultMessage={resultMessage} />
         </Card>
       </div>
     </div>
