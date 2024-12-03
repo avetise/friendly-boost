@@ -134,21 +134,18 @@ const Generate = () => {
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <FileText className="w-5 h-5 text-primary" />
-                  <label htmlFor="useSameResume" className="text-sm font-medium">
-                    Use Previous Resume
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="useSameResume"
-                    checked={useSameResume}
-                    onChange={handleCheckboxChange}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <label htmlFor="useSameResume" className="text-sm text-muted-foreground">
-                    Use the resume from my previous submission
-                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="useSameResume"
+                      checked={useSameResume}
+                      onChange={handleCheckboxChange}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="useSameResume" className="text-sm font-medium">
+                      Use Previous Resume
+                    </label>
+                  </div>
                 </div>
               </div>
 
