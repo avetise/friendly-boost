@@ -5,10 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Generate from "./pages/Generate";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
+import Referral from "./pages/Referral";
+import View from "./pages/View";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 
 const queryClient = new QueryClient();
@@ -29,52 +32,69 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+  <ThemeProvider>
+  <BrowserRouter>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route
+            path="/generate"
+            element={
+              <ProtectedRoute>
+                <Generate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <ProtectedRoute>
+                <PricingPlans />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/referral"
+            element={
+              <ProtectedRoute>
+                <Referral />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/view/:id"
+            element={
+              <ProtectedRoute>
+                <View />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route
-              path="/generate"
-              element={
-                <ProtectedRoute>
-                  <Generate />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <History />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pricing"
-              element={
-                <ProtectedRoute>
-                  <PricingPlans />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
       </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </AuthProvider>
+</BrowserRouter>
+</ThemeProvider>
 );
 
 export default App;

@@ -22,13 +22,6 @@ const plans = [
     features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
     priceId: 'price_1OubchBsWcSPhj7FZGoenAWG',
   },
-  {
-    name: 'Enterprise',
-    price: '$20',
-    description: 'For growing businesses',
-    features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
-    priceId: 'price_1Q1fbrBsWcSPhj7Fm7KkP1T6',
-  },
 ];
 
 export const PricingPlans = () => {
