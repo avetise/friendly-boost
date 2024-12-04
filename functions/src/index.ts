@@ -25,6 +25,78 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-11-20.acacia',
 });
 
+exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
+  if (!context?.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'You must be logged in to create a checkout session'
+    );
+  }
+
+  try {
+    const { priceId } = data;
+    const userId = context.auth.uid;
+
+    // Verify the price exists before creating the session
+    try {
+      console.log('Attempting to retrieve price with ID:', priceId);
+      const retrievedPrice = await stripe.prices.retrieve(priceId);
+      console.log('Retrieved price:', retrievedPrice);
+    } catch (error) {
+      console.error('Price retrieval error:', error);
+      if (!process.env.STRIPE_SECRET_KEY) {
+        console.error('Missing Stripe secret key in environment variables.');
+      }
+      if (typeof priceId !== 'string' || !priceId.trim()) {
+        console.error('Invalid or empty priceId provided:', priceId);
+      }
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        `The price ID ${priceId} does not exist in your Stripe account. Please verify the price ID.`
+      );
+    }
+
+    console.log('Creating checkout session with the following details:');
+    console.log('Price ID:', priceId);
+    console.log('User ID:', userId);
+    console.log('Success URL:', process.env.WEBAPP_URL + '/success?session_id={CHECKOUT_SESSION_ID}');
+    console.log('Cancel URL:', process.env.WEBAPP_URL + '/');
+    console.log('Customer Email:', context.auth.token.email);
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.WEBAPP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.WEBAPP_URL}/`,
+      customer_email: context.auth.token.email,
+      client_reference_id: userId,
+      // Optional: Enable automatic tax calculation
+      automatic_tax: {
+        enabled: true,
+      },
+    });
+
+    console.log('Checkout session created successfully:', session);
+    return { sessionId: session.id };
+  } catch (error) {
+    console.error('Checkout session creation error:', error);
+    // Stripe-specific error logging
+    if (error instanceof stripe_1.default.errors.StripeError) {
+      console.error('Stripe-specific error details:', error.raw);
+    }
+    if (error instanceof Error) {
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+    throw new functions.https.HttpsError('internal', 'An unexpected error occurred');
+  }
+});
+
 // Add new function to get subscription details
 export const getSubscriptionDetails = functions.https.onCall(async (data, context) => {
   if (!context?.auth) {
@@ -122,85 +194,3 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
 app.post('/webhook', handleWebhook);
 
 export const handleSubscriptionStatusChange = functions.https.onRequest(app);
-
-export const createCheckoutSession = functions.https.onCall(async (data: { priceId: string }, context: functions.https.CallableContext) => {
-  if (!context?.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'You must be logged in to create a checkout session'
-    );
-  }
-
-  try {
-    const { priceId } = data;
-    const userId = context.auth.uid;
-
-    // Verify the price exists before creating the session
-    try {
-      console.log('Attempting to retrieve price with ID:', priceId);
-      const retrievedPrice = await stripe.prices.retrieve(priceId);
-      console.log('Retrieved price:', retrievedPrice);
-    } catch (error) {
-      console.error('Price retrieval error:', error);
-
-      if (!process.env.STRIPE_SECRET_KEY) {
-        console.error('Missing Stripe secret key in environment variables.');
-      }
-
-      if (typeof priceId !== 'string' || !priceId.trim()) {
-        console.error('Invalid or empty priceId provided:', priceId);
-      }
-
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        `The price ID ${priceId} does not exist in your Stripe account. Please verify the price ID.`
-      );
-    }
-
-    console.log('Creating checkout session with the following details:');
-    console.log('Price ID:', priceId);
-    console.log('User ID:', userId);
-    console.log('Success URL:', process.env.WEBAPP_URL + '/success?session_id={CHECKOUT_SESSION_ID}');
-    console.log('Cancel URL:', process.env.WEBAPP_URL + '/');
-    console.log('Customer Email:', context.auth.token.email);
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.WEBAPP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.WEBAPP_URL}/`,
-      customer_email: context.auth.token.email,
-      client_reference_id: userId,
-      
-      // New optional configurations for 2024-11-20
-      automatic_tax: {
-        enabled: true, // Enable automatic tax calculation
-      },
-      payment_intent_data: {
-        setup_future_usage: 'off_session', // Optional: allow future payments
-      },
-    });
-
-    console.log('Checkout session created successfully:', session);
-    return { sessionId: session.id };
-  } catch (error) {
-    console.error('Checkout session creation error:', error);
-
-    // Stripe-specific error logging
-    if (error instanceof Stripe.errors.StripeError) {
-      console.error('Stripe-specific error details:', error.raw);
-    }
-
-    if (error instanceof Error) {
-      throw new functions.https.HttpsError('internal', error.message);
-    }
-
-    throw new functions.https.HttpsError('internal', 'An unexpected error occurred');
-  }
-});
