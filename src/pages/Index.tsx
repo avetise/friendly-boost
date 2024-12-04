@@ -14,9 +14,9 @@ const Index = () => {
       <MainNav />
       <main className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold mb-4">Welcome to SaaS Boilerplate</h2>
+        <h2 className="text-3xl font-bold mb-4">Welcome to JobFly</h2>
           <p className="text-muted-foreground mb-8">
-            Get started by navigating to Generate or check your Dashboard
+            Get started for free or <span className="text-primary font-semibold cursor-pointer">unlock premium features</span> for even better results!
           </p>
         </div>
       </main>

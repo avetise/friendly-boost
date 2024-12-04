@@ -77,11 +77,14 @@ export default function Dashboard() {
                   <Calendar className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Today</p>
+                  <p className="text-sm text-muted-foreground">Active This Month</p>
                   <p className="text-2xl font-bold">
-                    {activeUsersData.activeUsers.filter(user => 
-                      new Date(user.lastActive).toDateString() === new Date().toDateString()
-                    ).length}
+                  {activeUsersData.activeUsers.filter(user => {
+                    const oneMonthAgo = new Date();
+                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1); // Go back one month
+                    return new Date(user.lastActive) >= oneMonthAgo; // Check if lastActive is within the last month
+                  }).length}
+
                   </p>
                 </div>
               </div>

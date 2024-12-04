@@ -20,7 +20,6 @@ export const GenerateForm = ({ formData, setFormData, useSameResume }: GenerateF
           value={formData.cv}
           onChange={(e) => setFormData({ ...formData, cv: e.target.value })}
           className="min-h-[150px] resize-none"
-          disabled={useSameResume}
         />
       </div>
 
