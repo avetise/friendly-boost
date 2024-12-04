@@ -87,7 +87,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
   } catch (error) {
     console.error('Checkout session creation error:', error);
     // Stripe-specific error logging
-    if (error instanceof stripe_1.default.errors.StripeError) {
+    if (error instanceof Stripe.errors.StripeError) {
       console.error('Stripe-specific error details:', error.raw);
     }
     if (error instanceof Error) {
