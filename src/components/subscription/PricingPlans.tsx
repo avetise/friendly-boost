@@ -7,6 +7,8 @@ import { MainNav } from '@/components/navigation/MainNav';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
+import { stripePromise } from '@/lib/stripe';
+import { functions } from '@/lib/firebase';
 
 const plans = [
   {
@@ -39,7 +41,6 @@ export const PricingPlans = () => {
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const { toast } = useToast();
-  const functions = getFunctions();
 
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
@@ -62,7 +63,7 @@ export const PricingPlans = () => {
     if (user) {
       fetchSubscriptionDetails();
     }
-  }, [user, functions, toast]);
+  }, [user, toast]);
 
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
