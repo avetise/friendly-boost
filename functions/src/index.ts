@@ -25,6 +25,51 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-11-20.acacia',
 });
 
+// Add new function to get subscription details
+export const getSubscriptionDetails = functions.https.onCall(async (data, context) => {
+  if (!context?.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'You must be logged in to view subscription details'
+    );
+  }
+
+  try {
+    const userId = context.auth.uid;
+    
+    // Get user's Stripe customer ID from Firestore
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    if (!userData?.stripeCustomerId) {
+      return { status: 'no_subscription' };
+    }
+
+    // Get subscription details from Stripe
+    const subscriptions = await stripe.subscriptions.list({
+      customer: userData.stripeCustomerId,
+      status: 'active',
+      expand: ['data.plan.product']
+    });
+
+    if (!subscriptions.data.length) {
+      return { status: 'no_subscription' };
+    }
+
+    const subscription = subscriptions.data[0];
+    return {
+      status: 'active',
+      planId: subscription.items.data[0].price.id,
+      planName: (subscription.items.data[0].price.product as Stripe.Product).name,
+      currentPeriodEnd: subscription.current_period_end,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end
+    };
+  } catch (error) {
+    console.error('Error fetching subscription details:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to fetch subscription details');
+  }
+});
+
 const handleWebhook = async (req: express.Request, res: express.Response) => {
   try {
     console.log('Webhook Headers:', req.headers);
