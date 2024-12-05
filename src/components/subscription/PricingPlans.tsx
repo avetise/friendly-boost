@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { MainNav } from '@/components/navigation/MainNav';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { stripePromise } from '@/lib/stripe';
@@ -36,7 +36,7 @@ interface SubscriptionDetails {
 }
 
 export const PricingPlans = () => {
-  const { user } = useAuth();
+  const { user, userDetails } = useAuth();
   const [loading, setLoading] = useState(false);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
@@ -44,6 +44,11 @@ export const PricingPlans = () => {
 
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
+      if (!user) {
+        setSubscriptionLoading(false);
+        return;
+      }
+
       try {
         const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
         const result = await getSubscriptionDetails();
@@ -60,9 +65,7 @@ export const PricingPlans = () => {
       }
     };
 
-    if (user) {
-      fetchSubscriptionDetails();
-    }
+    fetchSubscriptionDetails();
   }, [user, toast]);
 
   const handleSubscribe = async (priceId: string) => {
@@ -81,7 +84,6 @@ export const PricingPlans = () => {
       const { data } = await createCheckoutSession({ priceId });
       const { sessionId } = data as { sessionId: string };
 
-      // Redirect to Stripe Checkout
       const stripe = await stripePromise;
       if (stripe) {
         await stripe.redirectToCheckout({ sessionId });
