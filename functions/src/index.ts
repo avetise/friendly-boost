@@ -177,7 +177,7 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
 
       if (!snapshot.empty) {
         const userId = snapshot.docs[0].id;
-        const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' : 'Basic';
+        const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' : (priceId === 'price_1OubcUBsWcSPhj7FIozkfeGh'? 'Premium':'Basic');
         
         await usersRef.doc(userId).update({
           subscriptionStatus: status,

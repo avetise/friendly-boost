@@ -56,7 +56,7 @@ const Success = () => {
                 <p className="text-sm text-muted-foreground">
                   You now have access to all premium features.
                 </p>
-                <Button onClick={() => navigate('/dashboard')}>
+                <Button onClick={() => navigate('/pricing')}>
                   Go to Dashboard
                 </Button>
               </div>
