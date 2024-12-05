@@ -164,12 +164,12 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     console.log('Webhook event type:', event.type);
     console.log('Webhook event data:', JSON.stringify(event.data));
 
-    // Your existing event handling logic
     if (event.type === 'customer.subscription.created' || 
         event.type === 'customer.subscription.updated') {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
       const status = subscription.status;
+      const priceId = subscription.items.data[0].price.id;
 
       // Get user by customerId from your database
       const usersRef = admin.firestore().collection('users');
@@ -177,9 +177,12 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
 
       if (!snapshot.empty) {
         const userId = snapshot.docs[0].id;
+        const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' : 'Basic';
+        
         await usersRef.doc(userId).update({
           subscriptionStatus: status,
           subscriptionId: subscription.id,
+          role: userRole,
         });
       }
     }
@@ -187,7 +190,11 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     res.json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
-    res.status(400).send(`Webhook Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof Error) {
+      res.status(400).send(`Webhook Error: ${error.message}`);
+    } else {
+      res.status(400).send('Webhook Error: Unknown error');
+    }
   }
 };
 
