@@ -8,13 +8,16 @@ import {
   History, 
   CreditCard,
   Users,
+  Shield,
   LogOut
 } from 'lucide-react';
 
 export const MainNav = () => {
-  const { user } = useAuth();
+  const { user, userDetails } = useAuth();
 
   if (!user) return null;
+
+  const isAdmin = userDetails?.role === 'Admin';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,21 +54,25 @@ export const MainNav = () => {
               <span>Pricing</span>
             </Link>
 
-            {/* <Link 
-              to="/referral" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <Users className="h-4 w-4" />
-              <span>Referral</span>
-            </Link> */}
+            {isAdmin && (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
 
-            <Link 
-              to="/dashboard" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
+                <Link 
+                  to="/admin" 
+                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span>Admin</span>
+                </Link>
+              </>
+            )}
 
             <div className="flex items-center space-x-4 border-l pl-6 ml-2">
               <span className="text-sm font-medium">

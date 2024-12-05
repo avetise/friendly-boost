@@ -13,19 +13,24 @@ import History from "./pages/History";
 import Referral from "./pages/Referral";
 import View from "./pages/View";
 import Success from "./pages/Success";
+import Admin from "./pages/Admin";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 
 const queryClient = new QueryClient();
 
 // Protected Route wrapper component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) => {
+  const { user, loading, userDetails } = useAuth();
   
   if (loading) {
     return <div>Loading...</div>;
   }
   
   if (!user) {
+    return <Navigate to="/" />;
+  }
+
+  if (requiredRole && userDetails?.role !== requiredRole) {
     return <Navigate to="/" />;
   }
 
@@ -51,8 +56,16 @@ const App = () => (
               <Route
                 path="/dashboard"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="Admin">
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRole="Admin">
+                    <Admin />
                   </ProtectedRoute>
                 }
               />
