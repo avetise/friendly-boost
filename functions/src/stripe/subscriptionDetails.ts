@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import { stripe } from './stripeClient';
+import Stripe from 'stripe';
 
 export const getSubscriptionDetails = functions.https.onCall(async (data, context) => {
   if (!context?.auth) {
@@ -26,7 +27,7 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
-      expand: ['data.plan.product']
+      expand: ['data.items.data.price.product']
     });
 
     if (!subscriptions.data.length) {
@@ -34,10 +35,12 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     }
 
     const subscription = subscriptions.data[0];
+    const product = subscription.items.data[0].price.product as Stripe.Product;
+
     return {
       status: 'active',
       planId: subscription.items.data[0].price.id,
-      planName: subscription.items.data[0].price.product.name,
+      planName: product.name,
       currentPeriodEnd: subscription.current_period_end,
       cancelAtPeriodEnd: subscription.cancel_at_period_end
     };
