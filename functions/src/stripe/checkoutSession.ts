@@ -27,7 +27,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const params: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
@@ -38,7 +38,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       ],
       success_url: `${process.env.WEBAPP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.WEBAPP_URL}/`,
-      customer_email: context.auth.token.email,
+      customer_email: context.auth.token.email || undefined,
       client_reference_id: userId,
       metadata: {
         userId: userId,
@@ -47,8 +47,9 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       automatic_tax: {
         enabled: true,
       },
-    });
+    };
 
+    const session = await stripe.checkout.sessions.create(params);
     console.log('Checkout session created successfully:', session);
     return { sessionId: session.id };
   } catch (error) {
