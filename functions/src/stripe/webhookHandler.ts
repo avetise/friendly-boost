@@ -29,105 +29,120 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as any;
-        const userId = session.client_reference_id;
+        const customerEmail = session.customer_details.email;
         const customerId = session.customer;
         
-        console.log(`Processing checkout completion for user ${userId} with customer ${customerId}`);
+        console.log(`Processing checkout completion for customer email ${customerEmail}`);
         
-        // Update user with Stripe customer ID
-        await admin.firestore().collection('users').doc(userId).update({
-          stripeCustomerId: customerId
-        });
+        // Find user by email
+        const usersRef = admin.firestore().collection('users');
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
+        
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.update({
+            stripeCustomerId: customerId
+          });
+          console.log(`Updated user ${userDoc.id} with Stripe customer ID ${customerId}`);
+        } else {
+          console.error(`No user found with email ${customerEmail}`);
+        }
         break;
       }
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as any;
-        const customerId = subscription.customer;
+        const customerEmail = subscription.customer_email;
         const status = subscription.status;
         const priceId = subscription.items.data[0].price.id;
 
-        console.log(`Processing subscription ${event.type} for customer ${customerId}`);
+        console.log(`Processing subscription ${event.type} for customer email ${customerEmail}`);
         console.log(`Subscription status: ${status}, priceId: ${priceId}`);
 
-        // Get user by customerId
+        // Find user by email
         const usersRef = admin.firestore().collection('users');
-        const snapshot = await usersRef.where('stripeCustomerId', '==', customerId).get();
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
 
-        if (!snapshot.empty) {
-          const userId = snapshot.docs[0].id;
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
           const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' :
-                          (priceId === 'price_1OubcUBsWcSPhj7FIozkfeGh' ? 'Premium' : 'Basic');
+                          (priceId === 'price_1OubcUBsWcSPhj7FIozkfeGh' ? 'Premium' : 'Standard');
           
-          console.log(`Updating user ${userId} with role ${userRole} and subscription status ${status}`);
+          console.log(`Updating user ${userDoc.id} with role ${userRole} and subscription status ${status}`);
           
-          await usersRef.doc(userId).update({
+          await userDoc.ref.update({
             subscriptionStatus: status,
             subscriptionId: subscription.id,
             role: userRole,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
         } else {
-          console.error(`No user found for customer ID: ${customerId}`);
+          console.error(`No user found with email ${customerEmail}`);
         }
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as any;
-        const customerId = subscription.customer;
+        const customerEmail = subscription.customer_email;
 
-        console.log(`Processing subscription deletion for customer ${customerId}`);
+        console.log(`Processing subscription deletion for customer email ${customerEmail}`);
 
         const usersRef = admin.firestore().collection('users');
-        const snapshot = await usersRef.where('stripeCustomerId', '==', customerId).get();
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
 
-        if (!snapshot.empty) {
-          const userId = snapshot.docs[0].id;
-          await usersRef.doc(userId).update({
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.update({
             subscriptionStatus: 'canceled',
-            role: 'Basic',
+            role: 'Standard',
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
+        } else {
+          console.error(`No user found with email ${customerEmail}`);
         }
         break;
       }
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as any;
-        const customerId = invoice.customer;
+        const customerEmail = invoice.customer_email;
         
-        console.log(`Processing successful payment for customer ${customerId}`);
+        console.log(`Processing successful payment for customer email ${customerEmail}`);
         
         const usersRef = admin.firestore().collection('users');
-        const snapshot = await usersRef.where('stripeCustomerId', '==', customerId).get();
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
 
-        if (!snapshot.empty) {
-          const userId = snapshot.docs[0].id;
-          await usersRef.doc(userId).update({
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.update({
             lastPaymentStatus: 'succeeded',
             lastPaymentDate: admin.firestore.FieldValue.serverTimestamp()
           });
+        } else {
+          console.error(`No user found with email ${customerEmail}`);
         }
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as any;
-        const customerId = invoice.customer;
+        const customerEmail = invoice.customer_email;
         
-        console.log(`Processing failed payment for customer ${customerId}`);
+        console.log(`Processing failed payment for customer email ${customerEmail}`);
         
         const usersRef = admin.firestore().collection('users');
-        const snapshot = await usersRef.where('stripeCustomerId', '==', customerId).get();
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
 
-        if (!snapshot.empty) {
-          const userId = snapshot.docs[0].id;
-          await usersRef.doc(userId).update({
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.update({
             lastPaymentStatus: 'failed',
             lastPaymentDate: admin.firestore.FieldValue.serverTimestamp()
           });
+        } else {
+          console.error(`No user found with email ${customerEmail}`);
         }
         break;
       }
