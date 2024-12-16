@@ -13,7 +13,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
   try {
     const { priceId } = data;
     const userId = context.auth.uid;
-    const userEmail = context.auth.token.email || null;
+    const userEmail = context.auth.token.email || undefined;
 
     // Verify the price exists
     try {
@@ -28,7 +28,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       );
     }
 
-    const params: Stripe.Checkout.SessionCreateParams = {
+    const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
@@ -48,9 +48,8 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       automatic_tax: {
         enabled: true,
       },
-    };
+    });
 
-    const session = await stripe.checkout.sessions.create(params);
     console.log('Checkout session created successfully:', session);
     return { sessionId: session.id };
   } catch (error) {
