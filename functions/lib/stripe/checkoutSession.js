@@ -11,6 +11,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
     try {
         const { priceId } = data;
         const userId = context.auth.uid;
+        const userEmail = context.auth.token.email || undefined;
         // Verify the price exists
         try {
             console.log('Attempting to retrieve price with ID:', priceId);
@@ -32,11 +33,11 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
             ],
             success_url: `${process.env.WEBAPP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.WEBAPP_URL}/`,
-            customer_email: context.auth.token.email,
+            customer_email: userEmail,
             client_reference_id: userId,
             metadata: {
                 userId: userId,
-                userEmail: context.auth.token.email
+                userEmail: userEmail || ''
             },
             automatic_tax: {
                 enabled: true,
