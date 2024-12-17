@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 
 export const getSubscriptionDetails = functions.https.onCall(async (data, context) => {
   if (!context?.auth) {
+    console.error('Authentication required');
     throw new functions.https.HttpsError(
       'unauthenticated',
       'You must be logged in to view subscription details'
@@ -12,6 +13,7 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
 
   try {
     const email = context.auth.token.email;
+    console.log('Fetching subscription details for email:', email);
     
     // Get customer by email
     const customers = await stripe.customers.list({
@@ -19,7 +21,10 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       limit: 1
     });
 
+    console.log('Found customers:', customers.data.length);
+
     if (!customers.data.length) {
+      console.log('No customer found for email:', email);
       return { status: 'no_subscription' };
     }
 
@@ -30,22 +35,31 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       expand: ['data.items.data.price.product']
     });
 
+    console.log('Found subscriptions:', subscriptions.data.length);
+
     if (!subscriptions.data.length) {
+      console.log('No active subscriptions found for customer');
       return { status: 'no_subscription' };
     }
 
     const subscription = subscriptions.data[0];
     const product = subscription.items.data[0].price.product as Stripe.Product;
 
-    return {
+    const details = {
       status: 'active',
       planId: subscription.items.data[0].price.id,
       planName: product.name,
       currentPeriodEnd: subscription.current_period_end,
       cancelAtPeriodEnd: subscription.cancel_at_period_end
     };
+
+    console.log('Returning subscription details:', details);
+    return details;
   } catch (error) {
-    console.error('Error fetching subscription details:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to fetch subscription details');
+    console.error('Error in getSubscriptionDetails:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to fetch subscription details. Please try again later.'
+    );
   }
 });
