@@ -57,6 +57,9 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     return details;
   } catch (error) {
     console.error('Error in getSubscriptionDetails:', error);
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error('Stripe-specific error details:', error.raw);
+    }
     throw new functions.https.HttpsError(
       'internal',
       'Failed to fetch subscription details. Please try again later.'

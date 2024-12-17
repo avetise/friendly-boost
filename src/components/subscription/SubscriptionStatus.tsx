@@ -21,6 +21,7 @@ export const SubscriptionStatus = () => {
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
       try {
+        console.log('Initiating subscription details fetch');
         const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
         const result = await getSubscriptionDetails();
         console.log('Subscription details result:', result.data);
