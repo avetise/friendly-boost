@@ -80,13 +80,20 @@ export const PricingPlans = () => {
 
     setLoading(true);
     try {
+      console.log('Creating checkout session for price:', priceId);
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
       const { data } = await createCheckoutSession({ priceId });
       const { sessionId } = data as { sessionId: string };
 
+      console.log('Received session ID:', sessionId);
       const stripe = await stripePromise;
-      if (stripe) {
-        await stripe.redirectToCheckout({ sessionId });
+      if (!stripe) {
+        throw new Error('Stripe not initialized');
+      }
+
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        throw error;
       }
     } catch (error) {
       console.error('Error during subscription process:', error);
@@ -95,6 +102,7 @@ export const PricingPlans = () => {
         description: error instanceof Error ? error.message : 'An unexpected error occurred',
         variant: 'destructive',
       });
+    } finally {
       setLoading(false);
     }
   };

@@ -28,6 +28,13 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
       );
     }
 
+    console.log('Creating checkout session with params:', {
+      mode: 'subscription',
+      customerEmail: userEmail,
+      priceId: priceId,
+      userId: userId
+    });
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
