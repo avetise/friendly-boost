@@ -50,14 +50,16 @@ export const PricingPlans = () => {
       }
 
       try {
+        console.log('Fetching subscription details for user:', user.email);
         const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
         const result = await getSubscriptionDetails();
+        console.log('Subscription details result:', result.data);
         setSubscription(result.data as SubscriptionDetails);
       } catch (error) {
         console.error('Error fetching subscription:', error);
         toast({
           title: 'Error',
-          description: 'Failed to fetch subscription details',
+          description: 'Failed to fetch subscription details. Please try again later.',
           variant: 'destructive',
         });
       } finally {
@@ -80,21 +82,31 @@ export const PricingPlans = () => {
 
     setLoading(true);
     try {
+      console.log('Creating checkout session for price:', priceId);
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
       const { data } = await createCheckoutSession({ priceId });
+      console.log('Checkout session created:', data);
+      
       const { sessionId } = data as { sessionId: string };
-
+      
       const stripe = await stripePromise;
-      if (stripe) {
-        await stripe.redirectToCheckout({ sessionId });
+      if (!stripe) {
+        throw new Error('Stripe failed to initialize');
+      }
+
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        console.error('Stripe redirect error:', error);
+        throw error;
       }
     } catch (error) {
       console.error('Error during subscription process:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description: error instanceof Error ? error.message : 'Failed to start checkout process',
         variant: 'destructive',
       });
+    } finally {
       setLoading(false);
     }
   };
