@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSubscriptionDetails = void 0;
 const functions = require("firebase-functions");
 const stripeClient_1 = require("./stripeClient");
+const stripe_1 = require("stripe");
 exports.getSubscriptionDetails = functions.https.onCall(async (data, context) => {
     if (!(context === null || context === void 0 ? void 0 : context.auth)) {
         console.error('Authentication required');
@@ -46,6 +47,9 @@ exports.getSubscriptionDetails = functions.https.onCall(async (data, context) =>
     }
     catch (error) {
         console.error('Error in getSubscriptionDetails:', error);
+        if (error instanceof stripe_1.default.errors.StripeError) {
+            console.error('Stripe-specific error details:', error.raw);
+        }
         throw new functions.https.HttpsError('internal', 'Failed to fetch subscription details. Please try again later.');
     }
 });
