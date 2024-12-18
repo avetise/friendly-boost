@@ -11,14 +11,26 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     );
   }
 
+  // Input validation: Ensure no unexpected fields
+  const allowedFields = ['email'];
+  const extraFields = Object.keys(data).filter(key => !allowedFields.includes(key));
+
+  if (extraFields.length > 0) {
+    console.warn('Request body has extra fields:', extraFields.join(', '));
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      `Invalid request body. Only allowed fields: ${allowedFields.join(', ')}`
+    );
+  }
+
   try {
     const email = context.auth.token.email;
     console.log('Fetching subscription details for email:', email);
-    
+
     // Get customer by email
     const customers = await stripe.customers.list({
       email: email,
-      limit: 1
+      limit: 1,
     });
 
     console.log('Found customers:', customers.data.length);
@@ -32,7 +44,7 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
-      expand: ['data.items.data.price.product']
+      expand: ['data.items.data.price.product'],
     });
 
     console.log('Found subscriptions:', subscriptions.data.length);
@@ -50,16 +62,23 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       planId: subscription.items.data[0].price.id,
       planName: product.name,
       currentPeriodEnd: subscription.current_period_end,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     };
 
     console.log('Returning subscription details:', details);
     return details;
   } catch (error) {
     console.error('Error in getSubscriptionDetails:', error);
+
+    // Handle Stripe-specific errors
     if (error instanceof Stripe.errors.StripeError) {
       console.error('Stripe-specific error details:', error.raw);
+      throw new functions.https.HttpsError(
+        'internal',
+        `Stripe error: ${error.message}`
+      );
     }
+
     throw new functions.https.HttpsError(
       'internal',
       'Failed to fetch subscription details. Please try again later.'

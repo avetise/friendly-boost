@@ -9,13 +9,20 @@ exports.getSubscriptionDetails = functions.https.onCall(async (data, context) =>
         console.error('Authentication required');
         throw new functions.https.HttpsError('unauthenticated', 'You must be logged in to view subscription details');
     }
+    // Input validation: Ensure no unexpected fields
+    const allowedFields = ['email'];
+    const extraFields = Object.keys(data).filter(key => !allowedFields.includes(key));
+    if (extraFields.length > 0) {
+        console.warn('Request body has extra fields:', extraFields.join(', '));
+        throw new functions.https.HttpsError('invalid-argument', `Invalid request body. Only allowed fields: ${allowedFields.join(', ')}`);
+    }
     try {
         const email = context.auth.token.email;
         console.log('Fetching subscription details for email:', email);
         // Get customer by email
         const customers = await stripeClient_1.stripe.customers.list({
             email: email,
-            limit: 1
+            limit: 1,
         });
         console.log('Found customers:', customers.data.length);
         if (!customers.data.length) {
@@ -26,7 +33,7 @@ exports.getSubscriptionDetails = functions.https.onCall(async (data, context) =>
         const subscriptions = await stripeClient_1.stripe.subscriptions.list({
             customer: customers.data[0].id,
             status: 'active',
-            expand: ['data.items.data.price.product']
+            expand: ['data.items.data.price.product'],
         });
         console.log('Found subscriptions:', subscriptions.data.length);
         if (!subscriptions.data.length) {
@@ -40,15 +47,17 @@ exports.getSubscriptionDetails = functions.https.onCall(async (data, context) =>
             planId: subscription.items.data[0].price.id,
             planName: product.name,
             currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
+            cancelAtPeriodEnd: subscription.cancel_at_period_end,
         };
         console.log('Returning subscription details:', details);
         return details;
     }
     catch (error) {
         console.error('Error in getSubscriptionDetails:', error);
+        // Handle Stripe-specific errors
         if (error instanceof stripe_1.default.errors.StripeError) {
             console.error('Stripe-specific error details:', error.raw);
+            throw new functions.https.HttpsError('internal', `Stripe error: ${error.message}`);
         }
         throw new functions.https.HttpsError('internal', 'Failed to fetch subscription details. Please try again later.');
     }
