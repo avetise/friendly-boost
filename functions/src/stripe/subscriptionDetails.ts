@@ -11,18 +11,6 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
     );
   }
 
-  // Input validation: Ensure no unexpected fields
-  const allowedFields = ['email'];
-  const extraFields = Object.keys(data).filter(key => !allowedFields.includes(key));
-
-  if (extraFields.length > 0) {
-    console.warn('Request body has extra fields:', extraFields.join(', '));
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      `Invalid request body. Only allowed fields: ${allowedFields.join(', ')}`
-    );
-  }
-
   try {
     const email = context.auth.token.email;
     console.log('Fetching subscription details for email:', email);
