@@ -4,9 +4,9 @@ import Stripe from 'stripe';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
+import { getSubscriptionDetails } from './stripe/subscriptionDetails';
 
 dotenv.config();
-
 admin.initializeApp();
 
 const app = express();
@@ -85,71 +85,44 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
   }
 });
 
-// Add new function to get subscription details
-export const getSubscriptionDetails = functions.https.onCall(async (data, context) => {
-  if (!context?.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'You must be logged in to view subscription details'
-    );
-  }
-
-  try {
-    const userEmail = context.auth.token.email;
-
-    if (!userEmail) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'User email is required to fetch subscription details.'
-      );
-    }
-
-    // Get user's Stripe customer ID from Firestore
-    const userSnapshot = await admin.firestore()
-      .collection('users')
-      .where('email', '==', userEmail)
-      .get();
-
-    if (userSnapshot.empty) {
-      throw new functions.https.HttpsError(
-        'not-found',
-        'No user found with the provided email.'
-      );
-    }
-
-    const userData = userSnapshot.docs[0].data();
-
-    if (!userData?.stripeCustomerId) {
-      return { status: 'no_subscription' };
-    }
-
-    // Get subscription details from Stripe
-    const subscriptions = await stripe.subscriptions.list({
-      customer: userData.stripeCustomerId,
-      status: 'active',
-      expand: ['data.plan.product'],
-    });
-
-    if (!subscriptions.data.length) {
-      return { status: 'no_subscription' };
-    }
-
-    const subscription = subscriptions.data[0];
-    return {
-      status: 'active',
-      planId: subscription.items.data[0].price.id,
-      planName: (subscription.items.data[0].price.product as Stripe.Product).name,
-      currentPeriodEnd: subscription.current_period_end,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    };
-  } catch (error) {
-    console.error('Error fetching subscription details:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to fetch subscription details');
-  }
-});
+// Export the getSubscriptionDetails function
+export { getSubscriptionDetails };
 
 const handleWebhook = async (req: express.Request, res: express.Response) => {
-  // Webhook handler logic remains unchanged
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  try {
+    if (!sig || !webhookSecret) {
+      throw new Error('Missing stripe signature or webhook secret');
+    }
+
+    const event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      webhookSecret
+    );
+
+    console.log('Processing webhook event:', event.type);
+
+    // Handle the event
+    switch (event.type) {
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+        const subscription = event.data.object;
+        console.log('Subscription event:', subscription);
+        // Handle subscription event
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 };
 
 app.post('/webhook', handleWebhook);

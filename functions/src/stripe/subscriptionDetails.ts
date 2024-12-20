@@ -33,10 +33,10 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       limit: 1,
     });
 
-    console.log('Stripe customers query result:', JSON.stringify(customers, null, 2));
+    console.log('Found customers:', customers.data.length);
 
     if (!customers.data.length) {
-      console.log('No Stripe customer found for email:', email);
+      console.log('No customer found for email:', email);
       return { 
         status: 'no_subscription',
         debug: {
@@ -59,7 +59,7 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       expand: ['data.items.data.price.product'],
     });
 
-    console.log('Subscriptions found:', subscriptions.data.length);
+    console.log('Found subscriptions:', subscriptions.data.length);
 
     if (!subscriptions.data.length) {
       console.log('No active subscriptions found for customer:', customerId);
