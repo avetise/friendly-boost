@@ -6,6 +6,14 @@ import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import { getSubscriptionDetails } from './stripe/subscriptionDetails';
 
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody: string;
+    }
+  }
+}
+
 dotenv.config();
 admin.initializeApp();
 
@@ -121,7 +129,12 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     res.json({ received: true });
   } catch (err) {
     console.error('Webhook error:', err);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    if (err instanceof Error) {
+      res.status(400).send(`Webhook Error: ${err.message}`);
+    } else {
+      res.status(400).send('Webhook Error: An unknown error occurred');
+    }
+    
   }
 };
 
