@@ -13,7 +13,7 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
 
   try {
     const email = context.auth.token.email;
-    console.log('Checking subscription for email:', email);
+    console.log('Fetching subscription details for email:', email);
 
     if (!email) {
       console.error('No email found in auth token');

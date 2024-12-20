@@ -83,12 +83,10 @@ export const SubscriptionStatus = () => {
           <div className="text-xs mt-2 text-gray-500">
             <p>Debug Info:</p>
             <p>Email checked: {subscription.debug.email}</p>
+            <p>Step completed: {subscription.debug.step}</p>
             <p>Customers found: {subscription.debug.customersFound}</p>
             {subscription.debug.stripeCustomerId && (
               <p>Stripe Customer ID: {subscription.debug.stripeCustomerId}</p>
-            )}
-            {subscription.debug.step && (
-              <p>Last completed step: {subscription.debug.step}</p>
             )}
             {subscription.debug.error && (
               <p>Error: {subscription.debug.error}</p>
