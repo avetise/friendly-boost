@@ -15,6 +15,9 @@ interface SubscriptionDetails {
   debug?: {
     email?: string;
     customersFound?: number;
+    stripeCustomerId?: string;
+    error?: string;
+    step?: string;
   };
 }
 
@@ -27,12 +30,21 @@ export const SubscriptionStatus = () => {
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
       try {
-        console.log('Initiating subscription details fetch for email:', user?.email);
+        if (!user?.email) {
+          console.log('No user email available');
+          return;
+        }
+
+        console.log('Starting subscription check for email:', user.email);
         const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
+        console.log('Calling getSubscriptionDetails function...');
+        
         const result = await getSubscriptionDetails();
-        console.log('Subscription details result:', result.data);
+        console.log('Raw subscription result:', result.data);
         
         const subscriptionData = result.data as SubscriptionDetails;
+        console.log('Parsed subscription data:', subscriptionData);
+        
         if (subscriptionData.status === 'no_subscription') {
           console.log('No subscription found. Debug info:', subscriptionData.debug);
         }
@@ -70,8 +82,17 @@ export const SubscriptionStatus = () => {
         {subscription?.debug && (
           <div className="text-xs mt-2 text-gray-500">
             <p>Debug Info:</p>
-            <p>Email used: {subscription.debug.email}</p>
+            <p>Email checked: {subscription.debug.email}</p>
             <p>Customers found: {subscription.debug.customersFound}</p>
+            {subscription.debug.stripeCustomerId && (
+              <p>Stripe Customer ID: {subscription.debug.stripeCustomerId}</p>
+            )}
+            {subscription.debug.step && (
+              <p>Last completed step: {subscription.debug.step}</p>
+            )}
+            {subscription.debug.error && (
+              <p>Error: {subscription.debug.error}</p>
+            )}
           </div>
         )}
       </div>
