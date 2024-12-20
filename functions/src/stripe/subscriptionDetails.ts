@@ -25,7 +25,13 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
 
     if (!customers.data.length) {
       console.log('No customer found for email:', email);
-      return { status: 'no_subscription' };
+      return { 
+        status: 'no_subscription',
+        debug: {
+          email: email,
+          customersFound: 0
+        }
+      };
     }
 
     // Get subscription details directly from Stripe
@@ -39,7 +45,13 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
 
     if (!subscriptions.data.length) {
       console.log('No active subscriptions found for customer');
-      return { status: 'no_subscription' };
+      return { 
+        status: 'no_subscription',
+        debug: {
+          email: email,
+          customersFound: customers.data.length
+        }
+      };
     }
 
     const subscription = subscriptions.data[0];
@@ -51,6 +63,10 @@ export const getSubscriptionDetails = functions.https.onCall(async (data, contex
       planName: product.name,
       currentPeriodEnd: subscription.current_period_end,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      debug: {
+        email: email,
+        customersFound: customers.data.length
+      }
     };
 
     console.log('Returning subscription details:', details);
