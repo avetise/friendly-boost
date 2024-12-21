@@ -83,11 +83,12 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
         break;
       }
 
-      case 'customer.subscription.deleted': {
+      case 'customer.subscription.deleted':
+      case 'customer.subscription.canceled': {
         const subscription = event.data.object as any;
         const customerEmail = subscription.customer_email;
 
-        console.log(`Processing subscription deletion for customer email ${customerEmail}`);
+        console.log(`Processing subscription cancellation for customer email ${customerEmail}`);
 
         const usersRef = admin.firestore().collection('users');
         const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
@@ -97,8 +98,10 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
           await userDoc.ref.update({
             subscriptionStatus: 'canceled',
             role: 'Standard',
+            subscriptionId: null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
+          console.log(`Updated user ${userDoc.id} subscription status to canceled`);
         } else {
           console.error(`No user found with email ${customerEmail}`);
         }

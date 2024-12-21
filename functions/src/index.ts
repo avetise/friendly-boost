@@ -5,6 +5,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import { getSubscriptionDetails } from './stripe/subscriptionDetails';
+import { createCheckoutSession } from './stripe/checkoutSession';
 
 declare global {
   namespace Express {
@@ -32,66 +33,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-11-20.acacia',
 });
 
-exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
-  if (!context?.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'You must be logged in to create a checkout session'
-    );
-  }
-
-  try {
-    const { priceId } = data;
-    const userEmail = context.auth.token.email;
-
-    if (!userEmail) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'User email is required to create a checkout session.'
-      );
-    }
-
-    // Verify the price exists before creating the session
-    try {
-      console.log('Attempting to retrieve price with ID:', priceId);
-      const retrievedPrice = await stripe.prices.retrieve(priceId);
-      console.log('Retrieved price:', retrievedPrice);
-    } catch (error) {
-      console.error('Price retrieval error:', error);
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        `The price ID ${priceId} does not exist in your Stripe account. Please verify the price ID.`
-      );
-    }
-
-    console.log('Creating checkout session with the following details:');
-    console.log('Price ID:', priceId);
-    console.log('User Email:', userEmail);
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.WEBAPP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.WEBAPP_URL}/`,
-      customer_email: userEmail,
-      automatic_tax: {
-        enabled: true,
-      },
-    });
-
-    console.log('Checkout session created successfully:', session);
-    return { sessionId: session.id };
-  } catch (error) {
-    console.error('Checkout session creation error:', error);
-    throw new functions.https.HttpsError('internal', 'An unexpected error occurred');
-  }
-});
+exports.createCheckoutSession = createCheckoutSession;
 
 // Export the getSubscriptionDetails function
 export { getSubscriptionDetails };
@@ -122,6 +64,28 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
         console.log('Subscription event:', subscription);
         // Handle subscription event
         break;
+      case 'customer.subscription.canceled':
+        const canceledSubscription = event.data.object;
+        const customerEmail = canceledSubscription.customer_email;
+
+        console.log(`Processing subscription cancellation for customer email ${customerEmail}`);
+
+        const usersRef = admin.firestore().collection('users');
+        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
+
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.update({
+            subscriptionStatus: 'canceled',
+            role: 'Standard',
+            subscriptionId: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+          console.log(`Updated user ${userDoc.id} subscription status to canceled`);
+        } else {
+          console.error(`No user found with email ${customerEmail}`);
+        }
+        break;
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
@@ -134,10 +98,42 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     } else {
       res.status(400).send('Webhook Error: An unknown error occurred');
     }
-    
   }
 };
 
 app.post('/webhook', handleWebhook);
 
-export const handleSubscriptionStatusChange = functions.https.onRequest(app);
+exports.handleSubscriptionStatusChange = functions.https.onRequest(app);
+
+exports.cancelSubscription = functions.https.onCall(async (data, context) => {
+  if (!context?.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'You must be logged in to cancel a subscription'
+    );
+  }
+
+  try {
+    const { subscriptionId } = data;
+    
+    if (!subscriptionId) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Subscription ID is required to cancel a subscription'
+      );
+    }
+
+    console.log(`Canceling subscription ${subscriptionId} for user ${context.auth.uid}`);
+
+    await stripe.subscriptions.cancel(subscriptionId);
+
+    console.log('Subscription cancelled successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Subscription cancellation error:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      error instanceof Error ? error.message : 'An unexpected error occurred'
+    );
+  }
+});

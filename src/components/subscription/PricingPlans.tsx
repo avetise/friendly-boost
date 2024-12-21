@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { MainNav } from '@/components/navigation/MainNav';
 import { httpsCallable } from 'firebase/functions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { stripePromise } from '@/lib/stripe';
 import { functions } from '@/lib/firebase';
 import { SubscriptionStatus, useSubscription } from './SubscriptionStatus';
@@ -76,58 +76,78 @@ export const PricingPlans = () => {
     }
   };
 
+  const handleCancel = async () => {
+    if (!user || !subscription?.subscriptionId) return;
+    
+    setLoading(true);
+    try {
+      const cancelSubscription = httpsCallable(functions, 'cancelSubscription');
+      await cancelSubscription({ subscriptionId: subscription.subscriptionId });
+      
+      toast({
+        title: 'Subscription Cancelled',
+        description: 'Your subscription will remain active until the end of the current billing period.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to cancel subscription',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getButtonConfig = (plan: typeof plans[0]) => {
     if (subscriptionLoading) {
-      return {
-        label: 'Loading...',
-        disabled: true,
-        action: () => {},
-      };
+      return null;
     }
 
+    // Free plan - show no buttons
+    if (!plan.priceId) {
+      if (!subscription || subscription.status === 'no_subscription') {
+        return {
+          label: 'Current Plan',
+          disabled: true,
+          show: true
+        };
+      }
+      return null;
+    }
+
+    // If no subscription or cancelled, show subscribe buttons for paid plans
     if (!subscription || subscription.status === 'no_subscription') {
       return {
-        label: plan.priceId ? 'Subscribe' : 'Current Plan',
-        disabled: !plan.priceId,
+        label: 'Subscribe',
         action: () => handleSubscribe(plan.priceId),
+        show: true
       };
     }
 
-    // Current active plan
+    // Current active plan - show active and cancel buttons
     if (subscription.planId === plan.priceId) {
       return {
         label: 'Active Plan',
         disabled: true,
-        action: () => {},
+        show: true,
+        showCancel: true
       };
     }
 
-    // Free plan when on paid plan
-    if (!plan.priceId && subscription.planId) {
-      return {
-        label: 'Downgrade',
-        disabled: false,
-        action: () => handleSubscribe('cancel'),
-      };
-    }
-
-    // Determine if this is an upgrade or downgrade
+    // Show upgrade buttons for higher tier plans
     const currentPlanIndex = plans.findIndex(p => p.priceId === subscription.planId);
     const thisPlanIndex = plans.findIndex(p => p.priceId === plan.priceId);
     
     if (thisPlanIndex > currentPlanIndex) {
       return {
         label: 'Upgrade',
-        disabled: false,
         action: () => handleSubscribe(plan.priceId),
-      };
-    } else {
-      return {
-        label: 'Downgrade',
-        disabled: false,
-        action: () => handleSubscribe(plan.priceId),
+        show: true
       };
     }
+
+    return null;
   };
 
   return (
@@ -144,7 +164,7 @@ export const PricingPlans = () => {
             const buttonConfig = getButtonConfig(plan);
             
             return (
-              <Card key={plan.name} className="animate-fadeIn">
+              <Card key={plan.name} className="animate-fadeIn relative">
                 <CardHeader>
                   <CardTitle>{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
@@ -172,20 +192,35 @@ export const PricingPlans = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    className="w-full"
-                    onClick={buttonConfig.action}
-                    disabled={buttonConfig.disabled || loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      buttonConfig.label
-                    )}
-                  </Button>
+                  {buttonConfig?.show && (
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full"
+                        onClick={buttonConfig.action}
+                        disabled={buttonConfig.disabled || loading}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          buttonConfig.label
+                        )}
+                      </Button>
+                      {buttonConfig.showCancel && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={handleCancel}
+                          disabled={loading}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Cancel Subscription
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
