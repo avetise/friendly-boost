@@ -78,7 +78,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/pricing"
+                path="/account"
                 element={
                   <ProtectedRoute>
                     <PricingPlans />

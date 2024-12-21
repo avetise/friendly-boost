@@ -12,17 +12,24 @@ import { SubscriptionStatus } from './SubscriptionStatus';
 
 const plans = [
   {
-    name: 'Basic',
+    name: 'Free',
+    price: '-',
+    description: 'Access basic AI-generated cover letters for up to 3 applications per month.',
+    features: ['Basic AI Writing', '3 Applications/Month', 'Community Support'],
+    priceId: '',
+  },
+  {
+    name: 'Premium',
     price: '$5',
-    description: 'Perfect for small projects',
-    features: ['Basic Features', '5 Projects', 'Community Support'],
+    description: 'Advanced AI tools for 10 cover letters per month.',
+    features: ['Advanced AI Writing', '10 Applications/Month', 'Priority Support'],
     priceId: 'price_1OubcUBsWcSPhj7FIozkfeGh',
   },
   {
     name: 'Pro',
     price: '$20',
-    description: 'For growing businesses',
-    features: ['All Starter Features', 'Unlimited Projects', 'Priority Support'],
+    description: 'Unlimited access to AI writing tools with premium features.',
+    features: ['All Features', 'Unlimited Applications', 'Premium Support'],
     priceId: 'price_1OubchBsWcSPhj7FZGoenAWG',
   },
 ];
@@ -31,6 +38,7 @@ export const PricingPlans = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const subscriptionStatus = 'active'; // Placeholder, replace with actual status logic
 
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
@@ -44,13 +52,10 @@ export const PricingPlans = () => {
 
     setLoading(true);
     try {
-      console.log('Creating checkout session for price:', priceId);
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
       const { data } = await createCheckoutSession({ priceId });
-      console.log('Checkout session created:', data);
-      
       const { sessionId } = data as { sessionId: string };
-      
+
       const stripe = await stripePromise;
       if (!stripe) {
         throw new Error('Stripe failed to initialize');
@@ -58,11 +63,9 @@ export const PricingPlans = () => {
 
       const { error } = await stripe.redirectToCheckout({ sessionId });
       if (error) {
-        console.error('Stripe redirect error:', error);
         throw error;
       }
     } catch (error) {
-      console.error('Error during subscription process:', error);
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to start checkout process',
@@ -82,7 +85,7 @@ export const PricingPlans = () => {
           <SubscriptionStatus />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
             <Card key={plan.name} className="animate-fadeIn">
               <CardHeader>
@@ -115,13 +118,15 @@ export const PricingPlans = () => {
                 <Button
                   className="w-full"
                   onClick={() => handleSubscribe(plan.priceId)}
-                  disabled={loading}
+                  disabled={loading || subscriptionStatus === 'active'}
                 >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
                     </>
+                  ) : subscriptionStatus === 'active' ? (
+                    'Subscribed'
                   ) : (
                     'Subscribe'
                   )}

@@ -79,7 +79,7 @@ export const SubscriptionStatus = () => {
     return (
       <div className="text-muted-foreground">
         <p>No active subscription</p>
-        {subscription?.debug && (
+        {/* {subscription?.debug && (
           <div className="text-xs mt-2 text-gray-500">
             <p>Debug Info:</p>
             <p>Email checked: {subscription.debug.email}</p>
@@ -92,7 +92,7 @@ export const SubscriptionStatus = () => {
               <p>Error: {subscription.debug.error}</p>
             )}
           </div>
-        )}
+        )} */}
       </div>
     );
   }

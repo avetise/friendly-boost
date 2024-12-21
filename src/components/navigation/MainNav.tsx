@@ -6,7 +6,7 @@ import {
   LayoutDashboard, 
   FileText, 
   History, 
-  CreditCard,
+  User2,
   Users,
   Shield,
   LogOut
@@ -47,11 +47,11 @@ export const MainNav = () => {
             </Link>
 
             <Link 
-              to="/pricing" 
+              to="/account" 
               className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
             >
-              <CreditCard className="h-4 w-4" />
-              <span>Pricing</span>
+              <User2 className="h-4 w-4" />
+              <span>Account</span>
             </Link>
 
             {isAdmin && (
