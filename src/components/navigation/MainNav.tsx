@@ -24,7 +24,7 @@ export const MainNav = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex h-14 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold text-primary">
               JobFly
             </span>
           </Link>
