@@ -6,7 +6,7 @@ import { functions } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface SubscriptionDetails {
+export interface SubscriptionDetails {
   status: string;
   planId?: string;
   planName?: string;
@@ -21,51 +21,57 @@ interface SubscriptionDetails {
   };
 }
 
-export const SubscriptionStatus = () => {
+export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchSubscriptionDetails = async () => {
-      try {
-        if (!user?.email) {
-          console.log('No user email available');
-          return;
-        }
-
-        console.log('Starting subscription check for email:', user.email);
-        const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
-        console.log('Calling getSubscriptionDetails function...');
-        
-        const result = await getSubscriptionDetails();
-        console.log('Raw subscription result:', result.data);
-        
-        const subscriptionData = result.data as SubscriptionDetails;
-        console.log('Parsed subscription data:', subscriptionData);
-        
-        if (subscriptionData.status === 'no_subscription') {
-          console.log('No subscription found. Debug info:', subscriptionData.debug);
-        }
-        
-        setSubscription(subscriptionData);
-      } catch (error) {
-        console.error('Error fetching subscription:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch subscription details. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+  const fetchSubscriptionDetails = async () => {
+    try {
+      if (!user?.email) {
+        console.log('No user email available');
+        return;
       }
-    };
 
+      console.log('Starting subscription check for email:', user.email);
+      const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
+      console.log('Calling getSubscriptionDetails function...');
+      
+      const result = await getSubscriptionDetails();
+      console.log('Raw subscription result:', result.data);
+      
+      const subscriptionData = result.data as SubscriptionDetails;
+      console.log('Parsed subscription data:', subscriptionData);
+      
+      if (subscriptionData.status === 'no_subscription') {
+        console.log('No subscription found. Debug info:', subscriptionData.debug);
+      }
+      
+      setSubscription(subscriptionData);
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch subscription details. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (user?.email) {
       fetchSubscriptionDetails();
     }
   }, [toast, user]);
+
+  return { subscription, loading, refetch: fetchSubscriptionDetails };
+};
+
+export const SubscriptionStatus = () => {
+  const { subscription, loading } = useSubscription();
 
   if (loading) {
     return (
@@ -79,20 +85,6 @@ export const SubscriptionStatus = () => {
     return (
       <div className="text-muted-foreground">
         <p>No active subscription</p>
-        {/* {subscription?.debug && (
-          <div className="text-xs mt-2 text-gray-500">
-            <p>Debug Info:</p>
-            <p>Email checked: {subscription.debug.email}</p>
-            <p>Step completed: {subscription.debug.step}</p>
-            <p>Customers found: {subscription.debug.customersFound}</p>
-            {subscription.debug.stripeCustomerId && (
-              <p>Stripe Customer ID: {subscription.debug.stripeCustomerId}</p>
-            )}
-            {subscription.debug.error && (
-              <p>Error: {subscription.debug.error}</p>
-            )}
-          </div>
-        )} */}
       </div>
     );
   }
