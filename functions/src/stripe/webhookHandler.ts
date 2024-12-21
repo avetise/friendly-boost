@@ -69,26 +69,32 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
           const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' :
                           (priceId === 'price_1OubcUBsWcSPhj7FIozkfeGh' ? 'Premium' : 'Standard');
           
-          console.log(`Updating user ${userDoc.id} with role ${userRole} and subscription status ${status}`);
-          
-          await userDoc.ref.update({
+          // If the subscription is marked for cancellation at period end
+          const updates: any = {
             subscriptionStatus: status,
             subscriptionId: subscription.id,
             role: userRole,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
-          });
+          };
+
+          if (subscription.cancel_at_period_end) {
+            updates.cancelAtPeriodEnd = true;
+            updates.cancelAt = subscription.cancel_at;
+          }
+          
+          console.log(`Updating user ${userDoc.id} with role ${userRole} and subscription status ${status}`);
+          await userDoc.ref.update(updates);
         } else {
           console.error(`No user found with email ${customerEmail}`);
         }
         break;
       }
 
-      case 'customer.subscription.deleted':
-      case 'customer.subscription.canceled': {
+      case 'customer.subscription.deleted': {
         const subscription = event.data.object as any;
         const customerEmail = subscription.customer_email;
 
-        console.log(`Processing subscription cancellation for customer email ${customerEmail}`);
+        console.log(`Processing subscription deletion for customer email ${customerEmail}`);
 
         const usersRef = admin.firestore().collection('users');
         const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
@@ -99,6 +105,8 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
             subscriptionStatus: 'canceled',
             role: 'Standard',
             subscriptionId: null,
+            cancelAtPeriodEnd: false,
+            cancelAt: null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
           console.log(`Updated user ${userDoc.id} subscription status to canceled`);

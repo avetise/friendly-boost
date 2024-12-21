@@ -12,6 +12,8 @@ export interface SubscriptionDetails {
   planName?: string;
   currentPeriodEnd?: number;
   cancelAtPeriodEnd?: boolean;
+  cancelAt?: number;
+  subscriptionId?: string;
   debug?: {
     email?: string;
     customersFound?: number;
@@ -101,7 +103,7 @@ export const SubscriptionStatus = () => {
       )}
       {subscription.cancelAtPeriodEnd && (
         <p className="text-sm text-yellow-600 mt-2">
-          Your subscription will end at the current period
+          Your subscription will end on {format(subscription.cancelAt! * 1000, 'MMMM dd, yyyy')}
         </p>
       )}
     </div>
