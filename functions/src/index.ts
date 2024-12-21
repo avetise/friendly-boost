@@ -64,7 +64,7 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
         console.log('Subscription event:', subscription);
         // Handle subscription event
         break;
-      case 'customer.subscription.canceled':
+      /* case 'customer.subscription.canceled':
         const canceledSubscription = event.data.object;
         const customerEmail = canceledSubscription.customer_email;
 
@@ -85,7 +85,7 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
         } else {
           console.error(`No user found with email ${customerEmail}`);
         }
-        break;
+        break; */
       default:
         console.log(`Unhandled event type ${event.type}`);
     }

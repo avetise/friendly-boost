@@ -35,21 +35,11 @@ export const useSubscription = () => {
         console.log('No user email available');
         return;
       }
-
-      console.log('Starting subscription check for email:', user.email);
+     
       const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
-      console.log('Calling getSubscriptionDetails function...');
-      
-      const result = await getSubscriptionDetails();
-      console.log('Raw subscription result:', result.data);
-      
+      const result = await getSubscriptionDetails();      
       const subscriptionData = result.data as SubscriptionDetails;
-      console.log('Parsed subscription data:', subscriptionData);
-      
-      if (subscriptionData.status === 'no_subscription') {
-        console.log('No subscription found. Debug info:', subscriptionData.debug);
-      }
-      
+
       setSubscription(subscriptionData);
     } catch (error) {
       console.error('Error fetching subscription:', error);
