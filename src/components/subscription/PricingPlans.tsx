@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { MainNav } from '@/components/navigation/MainNav';
 import { httpsCallable } from 'firebase/functions';
-import { Loader2, X } from 'lucide-react';
 import { stripePromise } from '@/lib/stripe';
 import { functions } from '@/lib/firebase';
 import { SubscriptionStatus, useSubscription } from './SubscriptionStatus';
+import { PlanCard } from './PlanCard';
 
 const plans = [
   {
@@ -137,10 +135,10 @@ export const PricingPlans = () => {
     // Current active plan - show active and cancel buttons
     if (subscription.planId === plan.priceId) {
       return {
-        label: 'Active Plan',
+        label: subscription.cancelAtPeriodEnd ? 'Cancelling Soon' : 'Active Plan',
         disabled: true,
         show: true,
-        showCancel: true
+        showCancel: !subscription.cancelAtPeriodEnd
       };
     }
 
@@ -169,71 +167,16 @@ export const PricingPlans = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => {
-            const buttonConfig = getButtonConfig(plan);
-            
-            return (
-              <Card key={plan.name} className="animate-fadeIn relative">
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">/month</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center">
-                        <svg
-                          className="h-5 w-5 text-primary flex-shrink-0"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span className="ml-2">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {buttonConfig?.show && (
-                    <div className="space-y-2">
-                      <Button
-                        className="w-full"
-                        onClick={buttonConfig.action}
-                        disabled={buttonConfig.disabled || loading}
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          buttonConfig.label
-                        )}
-                      </Button>
-                      {buttonConfig.showCancel && (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={handleCancel}
-                          disabled={loading}
-                        >
-                          <X className="mr-2 h-4 w-4" />
-                          Cancel Subscription
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan.name}
+              plan={plan}
+              buttonConfig={getButtonConfig(plan)}
+              loading={loading}
+              onCancel={handleCancel}
+              subscription={subscription}
+            />
+          ))}
         </div>
       </div>
     </>
