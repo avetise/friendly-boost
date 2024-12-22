@@ -64,28 +64,6 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
         console.log('Subscription event:', subscription);
         // Handle subscription event
         break;
-      /* case 'customer.subscription.canceled':
-        const canceledSubscription = event.data.object;
-        const customerEmail = canceledSubscription.customer_email;
-
-        console.log(`Processing subscription cancellation for customer email ${customerEmail}`);
-
-        const usersRef = admin.firestore().collection('users');
-        const userSnapshot = await usersRef.where('email', '==', customerEmail).get();
-
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          await userDoc.ref.update({
-            subscriptionStatus: 'canceled',
-            role: 'Standard',
-            subscriptionId: null,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
-          });
-          console.log(`Updated user ${userDoc.id} subscription status to canceled`);
-        } else {
-          console.error(`No user found with email ${customerEmail}`);
-        }
-        break; */
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
@@ -125,9 +103,12 @@ exports.cancelSubscription = functions.https.onCall(async (data, context) => {
 
     console.log(`Canceling subscription ${subscriptionId} for user ${context.auth.uid}`);
 
-    await stripe.subscriptions.cancel(subscriptionId);
+    // Cancel at period end instead of immediate cancellation
+    await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true
+    });
 
-    console.log('Subscription cancelled successfully');
+    console.log('Subscription marked for cancellation at period end');
     return { success: true };
   } catch (error) {
     console.error('Subscription cancellation error:', error);
