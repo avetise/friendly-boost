@@ -38,7 +38,7 @@ export const PricingPlans = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { subscription, loading: subscriptionLoading } = useSubscription();
+  const { subscription, loading: subscriptionLoading, refetch } = useSubscription();
 
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
@@ -77,12 +77,21 @@ export const PricingPlans = () => {
   };
 
   const handleCancel = async () => {
-    if (!user || !subscription?.subscriptionId) return;
+    if (!user || !subscription?.subscriptionId) {
+      toast({
+        title: 'Error',
+        description: 'No active subscription found',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     setLoading(true);
     try {
       const cancelSubscription = httpsCallable(functions, 'cancelSubscription');
       await cancelSubscription({ subscriptionId: subscription.subscriptionId });
+      
+      await refetch(); // Refresh subscription status after cancellation
       
       toast({
         title: 'Subscription Cancelled',
