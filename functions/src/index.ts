@@ -93,42 +93,66 @@ exports.cancelSubscription = functions.https.onCall(async (data, context) => {
 
   try {
     const { subscriptionId } = data;
-    const userEmail = context.auth.token.email;
-    
+    const email = context.auth.token.email;
+    console.log('Processing cancellation for email:', email);
+
+    if (!email) {
+      console.error('No email found in auth token');
+      return { 
+        status: 'error',
+        debug: { error: 'No email found in auth token', step: 'email_check' }
+      };
+    }
+
     if (!subscriptionId) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'Subscription ID is required to cancel a subscription'
-      );
+      console.error('No subscription ID provided');
+      return {
+        status: 'error',
+        debug: { error: 'Subscription ID is required', step: 'subscription_check' }
+      };
     }
 
-    if (!userEmail) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'User email is required to cancel a subscription'
-      );
+    // Get customer by email
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (!customers.data.length) {
+      return { 
+        status: 'error',
+        debug: { email, customersFound: 0, step: 'customer_check', error: 'No Stripe customer found' }
+      };
     }
 
-    console.log(`Canceling subscription ${subscriptionId} for user ${userEmail}`);
+    const customerId = customers.data[0].id;
 
-    // Verify the subscription belongs to the user
+    // Verify subscription ownership
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    if (subscription.customer_email !== userEmail) {
-      throw new functions.https.HttpsError(
-        'permission-denied',
-        'This subscription does not belong to the authenticated user'
-      );
+    if (subscription.customer !== customerId) {
+      return {
+        status: 'error',
+        debug: { 
+          email, 
+          subscriptionId,
+          customerId,
+          step: 'ownership_check',
+          error: 'Subscription does not belong to this customer'
+        }
+      };
     }
 
-    // Cancel at period end instead of immediate cancellation
+    // Cancel at period end
     const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true
     });
 
     console.log('Subscription marked for cancellation:', updatedSubscription);
+    
     return { 
-      success: true,
-      subscription: updatedSubscription 
+      status: 'success',
+      subscription: updatedSubscription,
+      debug: {
+        email,
+        customerId,
+        step: 'complete'
+      }
     };
   } catch (error) {
     console.error('Subscription cancellation error:', error);
