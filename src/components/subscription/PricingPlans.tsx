@@ -87,15 +87,20 @@ export const PricingPlans = () => {
     setLoading(true);
     try {
       const cancelSubscription = httpsCallable(functions, 'cancelSubscription');
-      await cancelSubscription({ subscriptionId: subscription.subscriptionId });
+      const result = await cancelSubscription({ subscriptionId: subscription.subscriptionId });
       
-      await refetch(); // Refresh subscription status after cancellation
-      
-      toast({
-        title: 'Subscription Cancelled',
-        description: 'Your subscription will remain active until the end of the current billing period.',
-      });
+      if (result.data.success) {
+        await refetch(); // Refresh subscription status after cancellation
+        
+        toast({
+          title: 'Subscription Cancelled',
+          description: 'Your subscription will remain active until the end of the current billing period.',
+        });
+      } else {
+        throw new Error('Failed to cancel subscription');
+      }
     } catch (error) {
+      console.error('Cancellation error:', error);
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to cancel subscription',

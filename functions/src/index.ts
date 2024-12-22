@@ -93,6 +93,7 @@ exports.cancelSubscription = functions.https.onCall(async (data, context) => {
 
   try {
     const { subscriptionId } = data;
+    const userEmail = context.auth.token.email;
     
     if (!subscriptionId) {
       throw new functions.https.HttpsError(
@@ -101,17 +102,42 @@ exports.cancelSubscription = functions.https.onCall(async (data, context) => {
       );
     }
 
-    console.log(`Canceling subscription ${subscriptionId} for user ${context.auth.uid}`);
+    if (!userEmail) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'User email is required to cancel a subscription'
+      );
+    }
+
+    console.log(`Canceling subscription ${subscriptionId} for user ${userEmail}`);
+
+    // Verify the subscription belongs to the user
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    if (subscription.customer_email !== userEmail) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        'This subscription does not belong to the authenticated user'
+      );
+    }
 
     // Cancel at period end instead of immediate cancellation
-    await stripe.subscriptions.update(subscriptionId, {
+    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true
     });
 
-    console.log('Subscription marked for cancellation at period end');
-    return { success: true };
+    console.log('Subscription marked for cancellation:', updatedSubscription);
+    return { 
+      success: true,
+      subscription: updatedSubscription 
+    };
   } catch (error) {
     console.error('Subscription cancellation error:', error);
+    if (error instanceof Stripe.errors.StripeError) {
+      throw new functions.https.HttpsError(
+        'internal',
+        `Stripe error: ${error.message}`
+      );
+    }
     throw new functions.https.HttpsError(
       'internal',
       error instanceof Error ? error.message : 'An unexpected error occurred'
