@@ -32,6 +32,7 @@ export const PlanCard = ({
   plan, 
   buttonConfig, 
   loading, 
+  onCancel,
   subscription 
 }: PlanCardProps) => {
   const showCancellationInfo = subscription?.cancelAtPeriodEnd && subscription?.cancelAt;
@@ -86,6 +87,16 @@ export const PlanCard = ({
                 buttonConfig.label
               )}
             </Button>
+            {buttonConfig.showCancel && !subscription?.cancelAtPeriodEnd && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={onCancel}
+                disabled={loading}
+              >
+                Cancel Subscription
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
