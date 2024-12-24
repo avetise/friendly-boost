@@ -4,7 +4,6 @@ import Stripe from 'stripe';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
-import { getSubscriptionDetails } from './stripe/subscriptionDetails';
 
 dotenv.config();
 admin.initializeApp();
@@ -111,9 +110,6 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
     }
 };
 
-app.post('/webhook', handleWebhook);
-exports.handleSubscriptionStatusChange = functions.https.onRequest(app);
-
 interface CancelSubscriptionData {
     subscriptionId: string;
 }
@@ -183,7 +179,7 @@ exports.cancelSubscription = functions.https.onCall(async (data: CancelSubscript
         if (error instanceof Stripe.errors.StripeError) {
             throw new functions.https.HttpsError(
                 'internal',
-                `Stripe error: ${(error as Error).message}`
+                `Stripe error: ${(error as Stripe.errors.StripeError).message}`
             );
         }
         throw new functions.https.HttpsError(
@@ -192,3 +188,6 @@ exports.cancelSubscription = functions.https.onCall(async (data: CancelSubscript
         );
     }
 });
+
+app.post('/webhook', handleWebhook);
+exports.handleSubscriptionStatusChange = functions.https.onRequest(app);
