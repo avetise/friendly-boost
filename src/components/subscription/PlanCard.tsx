@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PlanFeature {
@@ -32,7 +32,6 @@ export const PlanCard = ({
   plan, 
   buttonConfig, 
   loading, 
-  onCancel,
   subscription 
 }: PlanCardProps) => {
   const showCancellationInfo = subscription?.cancelAtPeriodEnd && subscription?.cancelAt;
@@ -48,7 +47,7 @@ export const PlanCard = ({
         </div>
         {showCancellationInfo && (
           <div className="mt-2 text-sm text-yellow-600">
-            Plan will be cancelled on {format(subscription.cancelAt! * 1000, 'MMMM dd, yyyy')}
+            Plan cancelled. Subscribed until {format(subscription.cancelAt! * 1000, 'MMMM dd, yyyy')}
           </div>
         )}
       </CardHeader>
@@ -87,17 +86,6 @@ export const PlanCard = ({
                 buttonConfig.label
               )}
             </Button>
-            {buttonConfig.showCancel && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={onCancel}
-                disabled={loading}
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancel Subscription
-              </Button>
-            )}
           </div>
         )}
       </CardContent>

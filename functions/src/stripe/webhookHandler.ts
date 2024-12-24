@@ -105,8 +105,8 @@ const handleWebhook = async (req: express.Request, res: express.Response) => {
             subscriptionStatus: 'canceled',
             role: 'Standard',
             subscriptionId: null,
-            cancelAtPeriodEnd: false,
-            cancelAt: null,
+            cancelAtPeriodEnd: true,
+            cancelAt: subscription.cancel_at,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
           console.log(`Updated user ${userDoc.id} subscription status to canceled`);

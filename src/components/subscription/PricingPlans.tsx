@@ -74,45 +74,6 @@ export const PricingPlans = () => {
     }
   };
 
-  const handleCancel = async () => {
-    if (!user || !subscription?.subscriptionId) {
-      toast({
-        title: 'Error',
-        description: 'No active subscription found',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const cancelSubscription = httpsCallable(functions, 'cancelSubscription');
-      const result = await cancelSubscription({ subscriptionId: subscription.subscriptionId });
-      const response = result.data as { status: string; subscription: any };
-      
-      if (response.status === 'success') {
-        await refetch(); // Refresh subscription status after cancellation
-        
-        toast({
-          title: 'Subscription Cancelled',
-          description: 'Your subscription will remain active until the end of the current billing period.',
-        });
-      } else {
-        console.error('Cancellation failed:', response);
-        throw new Error(response.debug?.error || 'Failed to cancel subscription');
-      }
-    } catch (error) {
-      console.error('Cancellation error:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to cancel subscription',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getButtonConfig = (plan: typeof plans[0]) => {
     if (subscriptionLoading) {
       return null;
@@ -130,7 +91,7 @@ export const PricingPlans = () => {
       return null;
     }
 
-    // If no subscription or cancelled, show subscribe buttons for paid plans
+    // If no subscription, show subscribe buttons for paid plans
     if (!subscription || subscription.status === 'no_subscription') {
       return {
         label: 'Subscribe',
@@ -139,13 +100,30 @@ export const PricingPlans = () => {
       };
     }
 
-    // Current active plan - show active and cancel buttons
+    // Current active plan - show status
     if (subscription.planId === plan.priceId) {
+      if (subscription.cancelAtPeriodEnd) {
+        return {
+          label: 'Cancelled',
+          disabled: true,
+          show: true,
+          showCancel: false // Don't show cancel button for already cancelled plans
+        };
+      }
       return {
-        label: subscription.cancelAtPeriodEnd ? 'Cancelling Soon' : 'Active Plan',
+        label: 'Active Plan',
         disabled: true,
         show: true,
-        showCancel: !subscription.cancelAtPeriodEnd
+        showCancel: true
+      };
+    }
+
+    // For cancelled subscriptions, show "Resubscribe" instead of "Subscribe"
+    if (subscription.cancelAtPeriodEnd) {
+      return {
+        label: 'Resubscribe',
+        action: () => handleSubscribe(plan.priceId),
+        show: true
       };
     }
 
