@@ -3,11 +3,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard, 
+  Home,
   FileText, 
   History, 
   User2,
-  Users,
+  FileSparkles,
   Shield,
   LogOut
 } from 'lucide-react';
@@ -18,6 +18,7 @@ export const MainNav = () => {
   if (!user) return null;
 
   const isAdmin = userDetails?.role === 'Admin';
+  const isPro = userDetails?.subscriptionStatus === 'active' && userDetails?.planId === 'price_1OubchBsWcSPhj7FZGoenAWG';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,12 +32,30 @@ export const MainNav = () => {
 
           <nav className="flex items-center space-x-6">
             <Link 
+              to="/" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
+
+            <Link 
               to="/generate" 
               className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
             >
               <FileText className="h-4 w-4" />
-              <span>Generate</span>
+              <span>Cover Letter</span>
             </Link>
+
+            {isPro && (
+              <Link 
+                to="/resume" 
+                className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+              >
+                <FileSparkles className="h-4 w-4" />
+                <span>Resume</span>
+              </Link>
+            )}
 
             <Link 
               to="/history" 
@@ -56,14 +75,6 @@ export const MainNav = () => {
 
             {isAdmin && (
               <>
-                <Link 
-                  to="/dashboard" 
-                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span>Dashboard</span>
-                </Link>
-
                 <Link 
                   to="/admin" 
                   className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Generate from "./pages/Generate";
+import Resume from "./pages/Resume";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Referral from "./pages/Referral";
@@ -19,7 +20,7 @@ import { PricingPlans } from "@/components/subscription/PricingPlans";
 const queryClient = new QueryClient();
 
 // Protected Route wrapper component
-const ProtectedRoute = ({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) => {
+const ProtectedRoute = ({ children, requiredRole, requiredPlan }: { children: React.ReactNode; requiredRole?: string; requiredPlan?: string }) => {
   const { user, loading, userDetails } = useAuth();
   
   if (loading) {
@@ -32,6 +33,10 @@ const ProtectedRoute = ({ children, requiredRole }: { children: React.ReactNode;
 
   if (requiredRole && userDetails?.role !== requiredRole) {
     return <Navigate to="/" />;
+  }
+
+  if (requiredPlan && (!userDetails?.subscriptionStatus || userDetails?.subscriptionStatus !== 'active' || userDetails?.planId !== requiredPlan)) {
+    return <Navigate to="/account" />;
   }
 
   return <>{children}</>;
@@ -50,6 +55,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Generate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/resume"
+                element={
+                  <ProtectedRoute requiredPlan="price_1OubchBsWcSPhj7FZGoenAWG">
+                    <Resume />
                   </ProtectedRoute>
                 }
               />
