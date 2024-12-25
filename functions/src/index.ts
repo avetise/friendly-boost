@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
+import { getSubscriptionDetails } from './stripe/subscriptionDetails';
 
 dotenv.config();
 admin.initializeApp();
@@ -191,3 +192,4 @@ exports.cancelSubscription = functions.https.onCall(async (data: CancelSubscript
 
 app.post('/webhook', handleWebhook);
 exports.handleSubscriptionStatusChange = functions.https.onRequest(app);
+exports.getSubscriptionDetails = getSubscriptionDetails;
