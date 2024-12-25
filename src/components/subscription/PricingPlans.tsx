@@ -12,22 +12,22 @@ const plans = [
   {
     name: 'Free',
     price: '-',
-    description: 'Access basic AI-generated cover letters for up to 3 applications per month.',
-    features: ['Basic AI Writing', '3 Applications/Month', 'Community Support'],
+    description: 'Basic cover letters.',
+    features: ['Basic AI Cover letters', 'Community Support'],
     priceId: '',
   },
   {
     name: 'Premium',
     price: '$5',
-    description: 'Advanced AI tools for 10 cover letters per month.',
-    features: ['Advanced AI Writing', '10 Applications/Month', 'Priority Support'],
+    description: 'Advanced cover letters.',
+    features: ['Advanced AI Cover letters', 'Humanized and removal of "AI-words"', 'Priority Support'],
     priceId: 'price_1OubcUBsWcSPhj7FIozkfeGh',
   },
   {
     name: 'Pro',
     price: '$20',
-    description: 'Unlimited access to AI writing tools with premium features.',
-    features: ['All Features', 'Unlimited Applications', 'Premium Support'],
+    description: 'Advanced cover letters and resumes',
+    features: ['Advanced AI Cover letters', 'Advanced AI Resumes', 'Premium Support'],
     priceId: 'price_1OubchBsWcSPhj7FZGoenAWG',
   },
 ];
@@ -201,6 +201,9 @@ export const PricingPlans = () => {
               subscription={subscription}
             />
           ))}
+        </div>
+        <div className="text-center mb-12">
+          <p className="mt-2 text-sm">To cancel your subscription, contact support@jobfly.co</p>
         </div>
       </div>
     </>

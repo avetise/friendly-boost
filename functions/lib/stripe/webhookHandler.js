@@ -55,13 +55,19 @@ const handleWebhook = async (req, res) => {
                     const userDoc = userSnapshot.docs[0];
                     const userRole = priceId === 'price_1OubchBsWcSPhj7FZGoenAWG' ? 'Pro' :
                         (priceId === 'price_1OubcUBsWcSPhj7FIozkfeGh' ? 'Premium' : 'Standard');
-                    console.log(`Updating user ${userDoc.id} with role ${userRole} and subscription status ${status}`);
-                    await userDoc.ref.update({
+                    // If the subscription is marked for cancellation at period end
+                    const updates = {
                         subscriptionStatus: status,
                         subscriptionId: subscription.id,
                         role: userRole,
                         updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                    });
+                    };
+                    if (subscription.cancel_at_period_end) {
+                        updates.cancelAtPeriodEnd = true;
+                        updates.cancelAt = subscription.cancel_at;
+                    }
+                    console.log(`Updating user ${userDoc.id} with role ${userRole} and subscription status ${status}`);
+                    await userDoc.ref.update(updates);
                 }
                 else {
                     console.error(`No user found with email ${customerEmail}`);
@@ -79,8 +85,12 @@ const handleWebhook = async (req, res) => {
                     await userDoc.ref.update({
                         subscriptionStatus: 'canceled',
                         role: 'Standard',
+                        subscriptionId: null,
+                        cancelAtPeriodEnd: true,
+                        cancelAt: subscription.cancel_at,
                         updatedAt: admin.firestore.FieldValue.serverTimestamp()
                     });
+                    console.log(`Updated user ${userDoc.id} subscription status to canceled`);
                 }
                 else {
                     console.error(`No user found with email ${customerEmail}`);

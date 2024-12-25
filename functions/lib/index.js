@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleSubscriptionStatusChange = exports.getSubscriptionDetails = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const stripe_1 = require("stripe");
@@ -8,11 +7,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const subscriptionDetails_1 = require("./stripe/subscriptionDetails");
-Object.defineProperty(exports, "getSubscriptionDetails", { enumerable: true, get: function () { return subscriptionDetails_1.getSubscriptionDetails; } });
 dotenv.config();
 admin.initializeApp();
 const app = express();
-// Raw body parsing middleware
+// Raw body parsing middleware with proper types
 app.use(bodyParser.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString();
@@ -31,7 +29,6 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
         if (!userEmail) {
             throw new functions.https.HttpsError('invalid-argument', 'User email is required to create a checkout session.');
         }
-        // Verify the price exists before creating the session
         try {
             console.log('Attempting to retrieve price with ID:', priceId);
             const retrievedPrice = await stripe.prices.retrieve(priceId);
@@ -77,14 +74,12 @@ const handleWebhook = async (req, res) => {
         }
         const event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
         console.log('Processing webhook event:', event.type);
-        // Handle the event
         switch (event.type) {
             case 'customer.subscription.created':
             case 'customer.subscription.updated':
             case 'customer.subscription.deleted':
                 const subscription = event.data.object;
                 console.log('Subscription event:', subscription);
-                // Handle subscription event
                 break;
             default:
                 console.log(`Unhandled event type ${event.type}`);
@@ -101,6 +96,64 @@ const handleWebhook = async (req, res) => {
         }
     }
 };
+exports.cancelSubscription = functions.https.onCall(async (data, context) => {
+    if (!(context === null || context === void 0 ? void 0 : context.auth)) {
+        throw new functions.https.HttpsError('unauthenticated', 'You must be logged in to cancel a subscription');
+    }
+    try {
+        const email = context.auth.token.email;
+        console.log('Processing cancellation for email:', email);
+        if (!email) {
+            console.error('No email found in auth token');
+            return {
+                status: 'error',
+                message: 'No email found in auth token'
+            };
+        }
+        const { subscriptionId } = data;
+        if (!subscriptionId) {
+            console.error('No subscription ID provided');
+            return {
+                status: 'error',
+                message: 'Subscription ID is required'
+            };
+        }
+        // Get customer by email
+        const customers = await stripe.customers.list({ email, limit: 1 });
+        if (!customers.data.length) {
+            return {
+                status: 'error',
+                message: 'No Stripe customer found'
+            };
+        }
+        const customerId = customers.data[0].id;
+        // Get subscription details
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        if (subscription.customer !== customerId) {
+            return {
+                status: 'error',
+                message: 'Subscription does not belong to this customer'
+            };
+        }
+        // Cancel at period end
+        const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+            cancel_at_period_end: true
+        });
+        console.log('Subscription marked for cancellation:', updatedSubscription);
+        return {
+            status: 'success',
+            subscription: updatedSubscription
+        };
+    }
+    catch (error) {
+        console.error('Subscription cancellation error:', error);
+        if (error instanceof stripe_1.default.errors.StripeError) {
+            throw new functions.https.HttpsError('internal', `Stripe error: ${error.message}`);
+        }
+        throw new functions.https.HttpsError('internal', error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
+});
 app.post('/webhook', handleWebhook);
 exports.handleSubscriptionStatusChange = functions.https.onRequest(app);
+exports.getSubscriptionDetails = subscriptionDetails_1.getSubscriptionDetails;
 //# sourceMappingURL=index.js.map

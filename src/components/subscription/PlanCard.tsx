@@ -87,7 +87,7 @@ export const PlanCard = ({
                 buttonConfig.label
               )}
             </Button>
-            {buttonConfig.showCancel && !subscription?.cancelAtPeriodEnd && (
+           {/*  {buttonConfig.showCancel && !subscription?.cancelAtPeriodEnd && (
               <Button
                 variant="outline"
                 className="w-full"
@@ -96,7 +96,7 @@ export const PlanCard = ({
               >
                 Cancel Subscription
               </Button>
-            )}
+            )} */}
           </div>
         )}
       </CardContent>
