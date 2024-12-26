@@ -7,7 +7,7 @@ import {
   FileText, 
   History, 
   User2,
-  FileSparkles,
+  Sparkles,
   Shield,
   LogOut
 } from 'lucide-react';
@@ -18,7 +18,7 @@ export const MainNav = () => {
   if (!user) return null;
 
   const isAdmin = userDetails?.role === 'Admin';
-  const isPro = userDetails?.subscriptionStatus === 'active' && userDetails?.planId === 'price_1OubchBsWcSPhj7FZGoenAWG';
+  const isPro = userDetails?.subscriptionStatus === 'active' || userDetails?.planId === 'price_1OubchBsWcSPhj7FZGoenAWG';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,7 +52,7 @@ export const MainNav = () => {
                 to="/resume" 
                 className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
               >
-                <FileSparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 <span>Resume</span>
               </Link>
             )}

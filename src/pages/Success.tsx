@@ -20,7 +20,7 @@ const Success = () => {
         description: "Invalid session",
         variant: "destructive",
       });
-      navigate('/pricing');
+      navigate('/account');
       return;
     }
 
@@ -56,8 +56,8 @@ const Success = () => {
                 <p className="text-sm text-muted-foreground">
                   You now have access to all premium features.
                 </p>
-                <Button onClick={() => navigate('/pricing')}>
-                  Go to Dashboard
+                <Button onClick={() => navigate('/account')}>
+                  Go to Account
                 </Button>
               </div>
             )}

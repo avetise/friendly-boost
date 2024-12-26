@@ -61,7 +61,7 @@ const App = () => (
               <Route
                 path="/resume"
                 element={
-                  <ProtectedRoute requiredPlan="price_1OubchBsWcSPhj7FZGoenAWG">
+                  <ProtectedRoute requiredPlan="price_1Qa559BsWcSPhj7F6nKmQRR4">
                     <Resume />
                   </ProtectedRoute>
                 }

@@ -18,18 +18,11 @@ const plans = [
   },
   {
     name: 'Premium',
-    price: '$5',
+    price: '$9.99',
     description: 'Advanced cover letters.',
-    features: ['Advanced AI Cover letters', 'Humanized and removal of "AI-words"', 'Priority Support'],
-    priceId: 'price_1OubcUBsWcSPhj7FIozkfeGh',
-  },
-  {
-    name: 'Pro',
-    price: '$20',
-    description: 'Advanced cover letters and resumes',
-    features: ['Advanced AI Cover letters', 'Advanced AI Resumes', 'Premium Support'],
-    priceId: 'price_1OubchBsWcSPhj7FZGoenAWG',
-  },
+    features: ['Advanced AI Cover letters', 'Advanced AI Resumes', 'Humanized and removal of "AI-words"', 'Premium Support'],
+    priceId: 'price_1Qa559BsWcSPhj7F6nKmQRR4',
+  }
 ];
 
 export const PricingPlans = () => {
@@ -166,11 +159,18 @@ export const PricingPlans = () => {
       };
     }
 
+    console.log(subscription.planId)
     // Show upgrade buttons for higher tier plans
     const currentPlanIndex = plans.findIndex(p => p.priceId === subscription.planId);
     const thisPlanIndex = plans.findIndex(p => p.priceId === plan.priceId);
     
+
+    console.log(currentPlanIndex)
+      console.log(thisPlanIndex)
+
+
     if (thisPlanIndex > currentPlanIndex) {
+      
       return {
         label: 'Upgrade',
         action: () => handleSubscribe(plan.priceId),
@@ -190,7 +190,7 @@ export const PricingPlans = () => {
           <SubscriptionStatus />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
             <PlanCard
               key={plan.name}
