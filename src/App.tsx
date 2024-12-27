@@ -20,13 +20,21 @@ import { PricingPlans } from "@/components/subscription/PricingPlans";
 const queryClient = new QueryClient();
 
 // Protected Route wrapper component
-const ProtectedRoute = ({ children, requiredRole, requiredPlan }: { children: React.ReactNode; requiredRole?: string; requiredPlan?: string }) => {
+const ProtectedRoute = ({
+  children,
+  requiredRole,
+  requiredPlan,
+}: {
+  children: React.ReactNode;
+  requiredRole?: string;
+  requiredPlan?: string;
+}) => {
   const { user, loading, userDetails } = useAuth();
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
-  
+
   if (!user) {
     return <Navigate to="/" />;
   }
@@ -35,12 +43,21 @@ const ProtectedRoute = ({ children, requiredRole, requiredPlan }: { children: Re
     return <Navigate to="/" />;
   }
 
-  if (requiredPlan && (!userDetails?.subscriptionStatus || userDetails?.subscriptionStatus !== 'active' || userDetails?.planId !== requiredPlan)) {
-    return <Navigate to="/account" />;
+  // Subscription check using localStorage
+  if (requiredPlan) {
+    const storedPlanId = localStorage.getItem('subscriptionPlanName');
+    const storedPeriodEnd = localStorage.getItem('subscriptionCurrentPeriodEnd');
+    const subscriptionExpiry = storedPeriodEnd ? parseInt(storedPeriodEnd, 10) : 0;
+    const isExpired = subscriptionExpiry < Date.now() / 1000;
+
+    if (!storedPlanId || storedPlanId !== requiredPlan || isExpired) {
+      return <Navigate to="/account" />;
+    }
   }
 
   return <>{children}</>;
 };
+
 
 const App = () => (
   <ThemeProvider>

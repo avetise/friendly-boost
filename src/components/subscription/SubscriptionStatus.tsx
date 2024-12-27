@@ -35,9 +35,9 @@ export const useSubscription = () => {
         console.log('No user email available');
         return;
       }
-     
+
       const getSubscriptionDetails = httpsCallable(functions, 'getSubscriptionDetails');
-      const result = await getSubscriptionDetails();      
+      const result = await getSubscriptionDetails();
       const subscriptionData = result.data as SubscriptionDetails;
 
       setSubscription(subscriptionData);
@@ -64,6 +64,25 @@ export const useSubscription = () => {
 
 export const SubscriptionStatus = () => {
   const { subscription, loading } = useSubscription();
+
+  useEffect(() => {
+    if (subscription) {
+      localStorage.setItem('subscriptionStatus', subscription.status);
+      localStorage.setItem('subscriptionPlanName', subscription.planId || '');
+      localStorage.setItem(
+        'subscriptionCurrentPeriodEnd',
+        subscription.currentPeriodEnd ? subscription.currentPeriodEnd.toString() : ''
+      );
+      localStorage.setItem(
+        'subscriptionCancelAt',
+        subscription.cancelAt ? subscription.cancelAt.toString() : ''
+      );
+      localStorage.setItem(
+        'subscriptionCancelAtPeriodEnd',
+        subscription.cancelAtPeriodEnd ? subscription.cancelAtPeriodEnd.toString() : 'false'
+      );
+    }
+  }, [subscription]);
 
   if (loading) {
     return (

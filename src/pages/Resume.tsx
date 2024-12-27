@@ -19,7 +19,7 @@ const Resume = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [useSameResume, setUseSameResume] = useState(false);
 
-  useEffect(() => {
+  /* useEffect(() => {
     const updateReferralCode = async () => {
       if (!user) return;
 
@@ -40,7 +40,7 @@ const Resume = () => {
     };
 
     updateReferralCode();
-  }, [user, toast]);
+  }, [user, toast]); */
 
   const handleCheckboxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUseSameResume(e.target.checked);

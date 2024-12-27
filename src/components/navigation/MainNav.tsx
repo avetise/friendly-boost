@@ -18,8 +18,17 @@ export const MainNav = () => {
   if (!user) return null;
 
   const isAdmin = userDetails?.role === 'Admin';
-  const isPro = userDetails?.subscriptionStatus === 'active' || userDetails?.planId === 'price_1OubchBsWcSPhj7FZGoenAWG';
+  
 
+
+  const storedPlanId = localStorage.getItem('subscriptionPlanName');
+      const storedPeriodEnd = localStorage.getItem('subscriptionCurrentPeriodEnd');
+      const subscriptionExpiry = storedPeriodEnd ? parseInt(storedPeriodEnd, 10) : 0;
+      const isExpired = subscriptionExpiry < Date.now() / 1000;
+      let isPro = true
+      if (!storedPlanId || storedPlanId !== 'price_1Qa559BsWcSPhj7F6nKmQRR4' || isExpired) {
+        isPro = false 
+      }
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-3">
