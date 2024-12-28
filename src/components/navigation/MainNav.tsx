@@ -11,6 +11,7 @@ import {
   Shield,
   LogOut
 } from 'lucide-react';
+import { SubCheck } from '@/components/subscription/SubCheck';
 
 export const MainNav = () => {
   const { user, userDetails } = useAuth();
@@ -19,16 +20,8 @@ export const MainNav = () => {
 
   const isAdmin = userDetails?.role === 'Admin';
   
+  console.log(SubCheck)
 
-
-  const storedPlanId = localStorage.getItem('subscriptionPlanName');
-      const storedPeriodEnd = localStorage.getItem('subscriptionCurrentPeriodEnd');
-      const subscriptionExpiry = storedPeriodEnd ? parseInt(storedPeriodEnd, 10) : 0;
-      const isExpired = subscriptionExpiry < Date.now() / 1000;
-      let isPro = true
-      if (!storedPlanId || storedPlanId !== 'price_1Qa559BsWcSPhj7F6nKmQRR4' || isExpired) {
-        isPro = false 
-      }
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-3">
@@ -56,7 +49,7 @@ export const MainNav = () => {
               <span>Cover Letter</span>
             </Link>
 
-            {isPro && (
+            {SubCheck && (
               <Link 
                 to="/resume" 
                 className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"

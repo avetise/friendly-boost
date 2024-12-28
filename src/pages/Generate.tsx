@@ -10,6 +10,8 @@ import { Card } from "@/components/ui/card";
 import { FileText, Send } from 'lucide-react';
 import { GenerateForm } from '@/components/generate/GenerateForm';
 import { GenerateResult } from '@/components/generate/GenerateResult';
+import { SubCheck } from '@/components/subscription/SubCheck';
+
 
 const Generate = () => {
   const { user } = useAuth();
@@ -19,7 +21,7 @@ const Generate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [useSameResume, setUseSameResume] = useState(false);
 
-  useEffect(() => {
+  /* useEffect(() => {
     const updateReferralCode = async () => {
       if (!user) return;
 
@@ -40,7 +42,7 @@ const Generate = () => {
     };
 
     updateReferralCode();
-  }, [user, toast]);
+  }, [user, toast]); */
 
   const handleCheckboxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUseSameResume(e.target.checked);
@@ -73,14 +75,14 @@ const Generate = () => {
 
     setIsLoading(true);
     try {
-      const serverURL = "https://jobfly.onrender.com/generate";
+      const serverURL = SubCheck? "https://jobfly.onrender.com/coverletter": "https://jobfly.onrender.com/generate";
       const response = await fetch(serverURL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`,
         },
-        body: JSON.stringify({ cv: formData.cv, jd: formData.jd }),
+        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, SubCheck }),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

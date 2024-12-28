@@ -159,7 +159,6 @@ export const PricingPlans = () => {
       };
     }
 
-    console.log(subscription.planId)
     // Show upgrade buttons for higher tier plans
     const currentPlanIndex = plans.findIndex(p => p.priceId === subscription.planId);
     const thisPlanIndex = plans.findIndex(p => p.priceId === plan.priceId);

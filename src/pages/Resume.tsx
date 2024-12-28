@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { FileText, Send } from 'lucide-react';
 import { GenerateForm } from '@/components/generate/GenerateForm';
 import { GenerateResult } from '@/components/generate/GenerateResult';
+import { SubCheck } from '@/components/subscription/SubCheck';
 
 const Resume = () => {
   const { user } = useAuth();
@@ -80,7 +81,7 @@ const Resume = () => {
           "Content-Type": "application/json",
           "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`,
         },
-        body: JSON.stringify({ cv: formData.cv, jd: formData.jd }),
+        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, SubCheck  }),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
