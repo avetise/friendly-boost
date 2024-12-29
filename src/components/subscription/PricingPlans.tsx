@@ -12,14 +12,14 @@ const plans = [
   {
     name: 'Free',
     price: '-',
-    description: 'Basic cover letters.',
+    description: 'Basic cover letters',
     features: ['Basic AI Cover letters', 'Community Support'],
     priceId: '',
   },
   {
     name: 'Premium',
-    price: '$9.99',
-    description: 'Advanced cover letters.',
+    price: 'A$9.99',
+    description: 'Advanced resumes and cover letters',
     features: ['Advanced AI Cover letters', 'Advanced AI Resumes', 'Humanized and removal of "AI-words"', 'Premium Support'],
     priceId: 'price_1Qa559BsWcSPhj7F6nKmQRR4',
   }

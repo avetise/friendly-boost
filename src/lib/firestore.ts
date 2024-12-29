@@ -62,16 +62,20 @@ export async function fetchActiveUsers() {
         const coverLettersRef = collection(db, 'coverletters');
         const coverLettersSnapshot = await getDocs(coverLettersRef);
 
+        // Get the current date and the start of the current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         // Aggregate data to count documents per user and track unique users
-        const userActivity: Record<string, UserActivityData> = {};
+        const userActivity: Record<string, { documentCount: number; lastActive: Date }> = {};
         coverLettersSnapshot.docs.forEach(doc => {
             const userEmail = doc.data().email;
-            const createdAt = doc.data().createdAt.toDate().toISOString(); // Assuming createdAt is stored in the document
+            const createdAt = doc.data().createdAt.toDate(); // Convert Firestore timestamp to Date
 
             if (userEmail) {
                 if (!userActivity[userEmail]) {
                     userActivity[userEmail] = { documentCount: 0, lastActive: createdAt };
-                }else{
+                } else {
                     userActivity[userEmail].documentCount += 1;
 
                     // Update lastActive if the current doc is more recent
@@ -79,21 +83,24 @@ export async function fetchActiveUsers() {
                         userActivity[userEmail].lastActive = createdAt;
                     }
                 }
-
-                
             }
         });
 
-        // Calculate total unique users
-        const totalUniqueUsers = Object.keys(userActivity).length;
+        // Filter users whose lastActive is within the current month
+        const activeUsersThisMonth = Object.entries(userActivity)
+            .filter(([_, { lastActive }]) => lastActive >= startOfMonth) // Ensure lastActive is a Date object
+            .map(([email, { documentCount, lastActive }]) => ({
+                email,
+                documentCount,
+                lastActive: lastActive.toISOString(), // Convert Date to ISO string for output
+            }))
+            .sort((a, b) => b.documentCount - a.documentCount)
+            //.slice(0, 20); // Assuming you want the top 20 active users
 
-        // Convert the object to an array and sort by document count
-        const activeUsers = Object.entries(userActivity)
-        .map(([email, { documentCount, lastActive }]) => ({ email, documentCount, lastActive }))
-        .sort((a, b) => b.documentCount - a.documentCount)
-            .slice(0, 20); // Assuming you want the top 10 active users
+        // Calculate total unique users active this month
+        const totalUniqueUsersThisMonth = activeUsersThisMonth.length;
 
-        return { activeUsers, totalUniqueUsers };
+        return { activeUsers: activeUsersThisMonth, totalUniqueUsers: totalUniqueUsersThisMonth };
     } catch (e) {
         console.error("Error fetching active users: ", e);
         throw e; // rethrow the error after logging it

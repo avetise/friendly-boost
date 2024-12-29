@@ -81,7 +81,7 @@ const Resume = () => {
           "Content-Type": "application/json",
           "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`,
         },
-        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, SubCheck  }),
+        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, sub:SubCheck()  }),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

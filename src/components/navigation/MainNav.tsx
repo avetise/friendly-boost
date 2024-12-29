@@ -9,7 +9,8 @@ import {
   User2,
   Sparkles,
   Shield,
-  LogOut
+  LogOut,
+  ChartColumn
 } from 'lucide-react';
 import { SubCheck } from '@/components/subscription/SubCheck';
 
@@ -20,7 +21,7 @@ export const MainNav = () => {
 
   const isAdmin = userDetails?.role === 'Admin';
   
-  console.log(SubCheck)
+  //console.log(SubCheck())
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -40,16 +41,7 @@ export const MainNav = () => {
               <Home className="h-4 w-4" />
               <span>Home</span>
             </Link>
-
-            <Link 
-              to="/generate" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <FileText className="h-4 w-4" />
-              <span>Cover Letter</span>
-            </Link>
-
-            {SubCheck && (
+            {SubCheck() && (
               <Link 
                 to="/resume" 
                 className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
@@ -58,6 +50,15 @@ export const MainNav = () => {
                 <span>Resume</span>
               </Link>
             )}
+            <Link 
+              to="/generate" 
+              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Cover Letter</span>
+            </Link>
+
+            
 
             <Link 
               to="/history" 
@@ -83,6 +84,14 @@ export const MainNav = () => {
                 >
                   <Shield className="h-4 w-4" />
                   <span>Admin</span>
+                </Link>
+
+                <Link 
+                  to="/dashboard" 
+                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+                >
+                  <ChartColumn className="h-4 w-4" />
+                  <span>Stats</span>
                 </Link>
               </>
             )}

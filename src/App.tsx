@@ -16,6 +16,8 @@ import View from "./pages/View";
 import Success from "./pages/Success";
 import Admin from "./pages/Admin";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
+import { SubCheck } from '@/components/subscription/SubCheck';
+
 
 const queryClient = new QueryClient();
 
@@ -44,15 +46,8 @@ const ProtectedRoute = ({
   }
 
   // Subscription check using localStorage
-  if (requiredPlan) {
-    const storedPlanId = localStorage.getItem('subscriptionPlanName');
-    const storedPeriodEnd = localStorage.getItem('subscriptionCurrentPeriodEnd');
-    const subscriptionExpiry = storedPeriodEnd ? parseInt(storedPeriodEnd, 10) : 0;
-    const isExpired = subscriptionExpiry < Date.now() / 1000;
-
-    if (!storedPlanId || storedPlanId !== requiredPlan || isExpired) {
+  if (requiredPlan && !SubCheck()) {
       return <Navigate to="/account" />;
-    }
   }
 
   return <>{children}</>;

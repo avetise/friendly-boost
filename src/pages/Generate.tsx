@@ -75,14 +75,14 @@ const Generate = () => {
 
     setIsLoading(true);
     try {
-      const serverURL = SubCheck? "https://jobfly.onrender.com/coverletter": "https://jobfly.onrender.com/generate";
+      const serverURL = SubCheck()? "https://jobfly.onrender.com/coverletter": "https://jobfly.onrender.com/generate";
       const response = await fetch(serverURL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`,
         },
-        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, SubCheck }),
+        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, sub: SubCheck() }),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
