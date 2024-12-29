@@ -1,7 +1,4 @@
 node_modules/
 .env
 *.log
-.env
 functions/.env
-functions/.env
-.env
