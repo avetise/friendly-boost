@@ -17,7 +17,7 @@ app.use(bodyParser.json({
     },
 }));
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-11-20.acacia',
+    apiVersion: '2024-12-18.acacia',
 });
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
     if (!(context === null || context === void 0 ? void 0 : context.auth)) {

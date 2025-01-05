@@ -5,6 +5,6 @@ const stripe_1 = require("stripe");
 const dotenv = require("dotenv");
 dotenv.config();
 exports.stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2024-11-20.acacia',
+    apiVersion: '2024-12-18.acacia',
 });
 //# sourceMappingURL=stripeClient.js.map

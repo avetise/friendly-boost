@@ -18,8 +18,8 @@ import Admin from "./pages/Admin";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { SubCheck } from '@/components/subscription/SubCheck';
 
-
 const queryClient = new QueryClient();
+console.log("App.tsx: Rendering...");
 
 // Protected Route wrapper component
 const ProtectedRoute = ({
@@ -56,7 +56,7 @@ const ProtectedRoute = ({
 
 const App = () => (
   <ThemeProvider>
-    <BrowserRouter>
+    <BrowserRouter basename="/app">
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
@@ -73,7 +73,7 @@ const App = () => (
               <Route
                 path="/resume"
                 element={
-                  <ProtectedRoute requiredPlan="price_1Qa559BsWcSPhj7F6nKmQRR4">
+                  <ProtectedRoute requiredPlan="price_1QbOq6BsWcSPhj7F2R2003OT">
                     <Resume />
                   </ProtectedRoute>
                 }
@@ -127,13 +127,27 @@ const App = () => (
                 }
               />
               <Route
-                path="/view/:id"
+                path="/view/coverletter/:id"
                 element={
                   <ProtectedRoute>
-                    <View />
+                    <View collection="coverletters" />
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/view/resume/:id"
+                element={
+                  <ProtectedRoute>
+                    <View collection="resumes" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+  path="*"
+  element={<div>404: Page Not Found</div>}
+/>
+
+
             </Routes>
             <Toaster />
             <Sonner />

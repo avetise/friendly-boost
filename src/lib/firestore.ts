@@ -94,13 +94,15 @@ export async function fetchActiveUsers() {
                 documentCount,
                 lastActive: lastActive.toISOString(), // Convert Date to ISO string for output
             }))
-            .sort((a, b) => b.documentCount - a.documentCount)
-            //.slice(0, 20); // Assuming you want the top 20 active users
+            .sort((a, b) => b.documentCount - a.documentCount);
 
         // Calculate total unique users active this month
-        const totalUniqueUsersThisMonth = activeUsersThisMonth.length;
+        //const totalUniqueUsersThisMonth = activeUsersThisMonth.length;
 
-        return { activeUsers: activeUsersThisMonth, totalUniqueUsers: totalUniqueUsersThisMonth };
+        // Calculate total unique users (all-time)
+        const totalUsers = Object.keys(userActivity).length;
+
+        return { activeUsers: activeUsersThisMonth, totalUniqueUsers: totalUsers };
     } catch (e) {
         console.error("Error fetching active users: ", e);
         throw e; // rethrow the error after logging it

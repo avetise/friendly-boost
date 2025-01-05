@@ -10,18 +10,19 @@ import {
   Sparkles,
   Shield,
   LogOut,
-  ChartColumn
+  ChartColumn,
+  Menu
 } from 'lucide-react';
 import { SubCheck } from '@/components/subscription/SubCheck';
+import { useState } from 'react';
 
 export const MainNav = () => {
   const { user, userDetails } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (!user) return null;
 
   const isAdmin = userDetails?.role === 'Admin';
-  
-  //console.log(SubCheck())
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,87 +34,82 @@ export const MainNav = () => {
             </span>
           </Link>
 
-          <nav className="flex items-center space-x-6">
-            <Link 
-              to="/" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </Link>
-            {SubCheck() && (
-              <Link 
-                to="/resume" 
-                className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Resume</span>
-              </Link>
-            )}
-            <Link 
-              to="/generate" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <FileText className="h-4 w-4" />
-              <span>Cover Letter</span>
-            </Link>
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
 
-            
-
-            <Link 
-              to="/history" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <History className="h-4 w-4" />
-              <span>History</span>
-            </Link>
-
-            <Link 
-              to="/account" 
-              className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-            >
-              <User2 className="h-4 w-4" />
-              <span>Account</span>
-            </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-6">
+            <NavItem to="/" icon={Home} label="Home" />
+            {(SubCheck()||isAdmin) && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
+            <NavItem to="/generate" icon={FileText} label="Cover Letter" />
+            <NavItem to="/history" icon={History} label="History" />
+            <NavItem to="/account" icon={User2} label="Account" />
 
             {isAdmin && (
               <>
-                <Link 
-                  to="/admin" 
-                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span>Admin</span>
-                </Link>
-
-                <Link 
-                  to="/dashboard" 
-                  className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
-                >
-                  <ChartColumn className="h-4 w-4" />
-                  <span>Stats</span>
-                </Link>
+                <NavItem to="/admin" icon={Shield} label="Admin" />
+                <NavItem to="/dashboard" icon={ChartColumn} label="Stats" />
               </>
             )}
 
-            <div className="flex items-center space-x-4 border-l pl-6 ml-2">
-              <span className="text-sm font-medium">
-                {user.displayName}
-              </span>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => auth.signOut()}
-                className="flex items-center space-x-2 text-sm hover:text-primary"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </Button>
-            </div>
+            <UserSection user={user} />
           </nav>
+
+          {/* Mobile Navigation */}
+          {menuOpen && (
+            <nav className="absolute top-full left-0 right-0 bg-background border-t p-4 lg:hidden">
+              <div className="flex flex-col space-y-4">
+                <NavItem to="/" icon={Home} label="Home" />
+                {(SubCheck()||isAdmin)  && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
+                <NavItem to="/generate" icon={FileText} label="Cover Letter" />
+                <NavItem to="/history" icon={History} label="History" />
+                <NavItem to="/account" icon={User2} label="Account" />
+
+                {isAdmin && (
+                  <>
+                    <NavItem to="/admin" icon={Shield} label="Admin" />
+                    <NavItem to="/dashboard" icon={ChartColumn} label="Stats" />
+                  </>
+                )}
+
+                <UserSection user={user} />
+              </div>
+            </nav>
+          )}
         </div>
       </div>
     </header>
   );
 };
+
+const NavItem = ({ to, icon: Icon, label }) => (
+  <Link 
+    to={to} 
+    className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary"
+  >
+    <Icon className="h-4 w-4" />
+    <span>{label}</span>
+  </Link>
+);
+
+const UserSection = ({ user }) => (
+  <div className="flex items-center space-x-4 border-l pl-6 ml-2">
+    <span className="text-sm font-medium">
+      {user.displayName}
+    </span>
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      onClick={() => auth.signOut()}
+      className="flex items-center space-x-2 text-sm hover:text-primary"
+    >
+      <LogOut className="h-4 w-4" />
+      <span>Sign Out</span>
+    </Button>
+  </div>
+);

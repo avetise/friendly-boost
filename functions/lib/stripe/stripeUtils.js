@@ -10,7 +10,7 @@ const updateUserSubscription = async (userDoc, updates) => {
 exports.updateUserSubscription = updateUserSubscription;
 const determineSubscriptionStatus = (priceId) => {
     switch (priceId) {
-        case 'price_1Qa559BsWcSPhj7F6nKmQRR4':
+        case 'price_1QbOq6BsWcSPhj7F2R2003OT':
             return 'Premium';
         default:
             return 'Standard';

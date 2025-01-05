@@ -10,7 +10,8 @@ import { SubCheck } from '@/components/subscription/SubCheck';
 
 const Index = () => {
   const { user } = useAuth();
-
+  const subbie = SubCheck();
+console.log("Loaded...")
   if (!user) {
     return <SignIn />;
   }
@@ -19,6 +20,8 @@ const Index = () => {
       <MainNav />
       <div className="container max-w-3xl mx-auto px-4 py-8">
         <Card className="p-6 space-y-6">
+
+          
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-foreground">Welcome to the Future of JobFly: Introducing Premium!</h1>
             <p className="text-muted-foreground">
@@ -40,7 +43,7 @@ const Index = () => {
               <Card className="p-4 bg-muted/50">
                 <h3 className="text-lg font-semibold text-foreground">🚀 Premium Plan</h3>
                 <p className="text-muted-foreground">For those who want to stand out:</p>
-                <p className="text-primary font-bold">A$9.99/month</p>
+                <p className="text-primary font-bold">$9.99/month</p>
                 <ul className="list-disc list-inside text-muted-foreground">
                   <li>Advanced AI cover letters</li>
                   <li>Advanced AI resumes</li>
@@ -51,7 +54,7 @@ const Index = () => {
             </div>
           </div>
 
-  {!SubCheck() &&(
+  {!subbie &&(
     <>
           <div className="space-y-2">
             <h2 className="text-xl font-bold text-foreground">Why Upgrade?</h2>

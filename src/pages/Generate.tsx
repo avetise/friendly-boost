@@ -21,28 +21,9 @@ const Generate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [useSameResume, setUseSameResume] = useState(false);
 
-  /* useEffect(() => {
-    const updateReferralCode = async () => {
-      if (!user) return;
+  const subbie = SubCheck()
+  console.log(subbie)
 
-      const referralCode = localStorage.getItem('referralCode');
-      if (referralCode) {
-        const userDocRef = doc(db, 'users', user.uid);
-        try {
-          await updateDoc(userDocRef, { referral: referralCode });
-          localStorage.removeItem('referralCode');
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to update referral code.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-
-    updateReferralCode();
-  }, [user, toast]); */
 
   const handleCheckboxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUseSameResume(e.target.checked);
@@ -64,6 +45,8 @@ const Generate = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    //console.log(import.meta.env.VITE_API_KEY)
     if (!user) {
       toast({
         title: "Error",
@@ -72,18 +55,19 @@ const Generate = () => {
       });
       return;
     }
-
     setIsLoading(true);
     try {
-      const serverURL = SubCheck()? "https://jobfly.onrender.com/coverletter": "https://jobfly.onrender.com/generate";
+      const serverURL = subbie? "https://jobfly.onrender.com/coverletter": "https://jobfly.onrender.com/generate"; //
       const response = await fetch(serverURL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`,
         },
-        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, sub: SubCheck() }),
+        body: JSON.stringify({ cv: formData.cv, jd: formData.jd, sub: subbie }),
       });
+
+      //console.log(response)
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
@@ -91,13 +75,94 @@ const Generate = () => {
 
       message = message.replace(/\[Your Name\]/g, user.displayName || '');
       message = message.replace(/\[Email Address\]/g, user.email || '');
-      setResultMessage(message);
 
-      await addDoc(collection(db, "coverletters"), {
-        email: user.email,
-        message: message,
-        createdAt: new Date(),
-      });
+      
+      // Define the replacement array with expanded wildcards
+      const replacementArray: { [key: string]: string } = {
+        // Expanded variations for "honed"
+        "honed": "developed",
+        "honing": "improving",
+
+        // Expanded variations for "navigat*"
+        "navigate": "manage",
+        "navigating": "managing",
+        "navigated": "managed",
+        "navigation": "management",
+
+        // Expanded variations for "realm"
+        "realm": "field",
+
+        // Expanded variations for "esteemed"
+        "esteemed": "respected",
+
+        // Expanded variations for "journey"
+        "journey": "experience",
+
+        // Expanded variations for "aligns seamlessly"
+        "aligns seamlessly": "fits well",
+
+        // Expanded variations for "harmoniz*"
+        "harmonize": "integrate",
+        "harmonizing": "integrating",
+        "harmonized": "integrated",
+        "harmonization": "integration",
+
+        // Expanded variations for "cultivat*"
+        "cultivate": "build",
+        "cultivating": "building",
+        "cultivated": "built",
+        "cultivation": "development",
+
+        // Expanded variations for "spearhead"
+        "spearhead": "lead",
+        "spearheading": "leading",
+        "spearheaded": "led",
+
+        // Expanded variations for "drawn to"
+        "drawn to": "interested in",
+
+        // Expanded variations for "underscores"
+        "underscores": "highlights",
+
+        // Expanded variations for "complemented by"
+        "complemented by": "supported by",
+
+        // Expanded variations for "spirit"
+        "spirit": "approach",
+
+        // Expanded variations for "exciting journey"
+        "exciting journey": "rewarding experience",
+
+        // Expanded variations for "tenure"
+        "tenure": "time",
+
+        // Expanded variations for "enthusiasms"
+        "enthusiasms": "interests",
+      };
+
+      // Function to perform literal replacements
+      function replaceText(message: string, user: { displayName?: string; email?: string }): string {
+      
+        // Replace cringe words/phrases using the replacement array
+        Object.keys(replacementArray).forEach((key) => {
+          const regex = new RegExp(`\\b${key}\\b`, 'gi'); // Match whole words only
+          message = message.replace(regex, replacementArray[key]);
+        });
+
+        return message;
+      }
+
+      const rMessage = replaceText(message, user);
+      subbie? setResultMessage(rMessage):setResultMessage(message);
+
+      console.log(resultMessage)
+      if (resultMessage.length > 5) {
+        await addDoc(collection(db, "coverletters"), {
+          email: user.email,
+          message: resultMessage,
+          createdAt: new Date(),
+        })
+      };
 
       if (!useSameResume && formData.cv.length > 100) {
         const userDocRef = doc(db, 'users', user.uid);
