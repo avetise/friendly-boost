@@ -11,7 +11,8 @@ import {
   Shield,
   LogOut,
   ChartColumn,
-  Menu
+  Menu,
+  Users
 } from 'lucide-react';
 import { SubCheck } from '@/components/subscription/SubCheck';
 import { useState } from 'react';
@@ -48,6 +49,7 @@ export const MainNav = () => {
             {(SubCheck()||isAdmin) && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
             <NavItem to="/generate" icon={FileText} label="Cover Letter" />
             <NavItem to="/history" icon={History} label="History" />
+            <NavItem to="/invite" icon={Users} label="Invite" />
             <NavItem to="/account" icon={User2} label="Account" />
 
             {isAdmin && (
@@ -65,9 +67,10 @@ export const MainNav = () => {
             <nav className="absolute top-full left-0 right-0 bg-background border-t p-4 lg:hidden">
               <div className="flex flex-col space-y-4">
                 <NavItem to="/" icon={Home} label="Home" />
-                {(SubCheck()||isAdmin)  && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
+                {(SubCheck()||isAdmin) && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
                 <NavItem to="/generate" icon={FileText} label="Cover Letter" />
                 <NavItem to="/history" icon={History} label="History" />
+                <NavItem to="/invite" icon={Users} label="Invite" />
                 <NavItem to="/account" icon={User2} label="Account" />
 
                 {isAdmin && (

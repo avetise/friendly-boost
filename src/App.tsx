@@ -15,6 +15,7 @@ import Referral from "./pages/Referral";
 import View from "./pages/View";
 import Success from "./pages/Success";
 import Admin from "./pages/Admin";
+import Invite from "./pages/Invite";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { SubCheck } from '@/components/subscription/SubCheck';
 
@@ -103,6 +104,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/invite"
+                element={
+                  <ProtectedRoute>
+                    <Invite />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/account"
                 element={
                   <ProtectedRoute>
@@ -142,12 +151,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              <Route
-  path="*"
-  element={<div>404: Page Not Found</div>}
-/>
-
-
+              <Route path="*" element={<div>404: Page Not Found</div>} />
             </Routes>
             <Toaster />
             <Sonner />
