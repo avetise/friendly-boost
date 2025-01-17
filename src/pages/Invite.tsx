@@ -28,7 +28,8 @@ const Invite = () => {
 
       try {
         // Only query users who joined through referral
-        const usersQuery = query(collection(db, 'users'), where('referral', '==', user.email));
+        //const usersQuery = query(collection(db, 'users'), where('referral', '==', user.uid));
+        const usersQuery = query(collection(db, 'invites'), where('senderEmail', '==', user.uid));
         const usersSnapshot = await getDocs(usersQuery);
 
         setStats({
