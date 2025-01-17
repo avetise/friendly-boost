@@ -22,8 +22,7 @@ const Generate = () => {
   const [useSameResume, setUseSameResume] = useState(false);
 
   const subbie = SubCheck()
-  console.log(subbie)
-
+  //console.log(subbie)
 
   const handleCheckboxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUseSameResume(e.target.checked);
@@ -155,7 +154,7 @@ const Generate = () => {
       const rMessage = replaceText(message, user);
       subbie? setResultMessage(rMessage):setResultMessage(message);
 
-      console.log(resultMessage)
+      //console.log(resultMessage)
       if (resultMessage.length > 5) {
         await addDoc(collection(db, "coverletters"), {
           email: user.email,

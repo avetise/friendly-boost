@@ -1,22 +1,33 @@
 import { useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { useSearchParams } from 'react-router-dom'; // Or useNextRouter if using Next.js
 
 export const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref'); // Get referral code from URL
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      // If referral code exists, update Firestore
+      if (referralCode) {
+        await updateUserReferral(userCredential.user.uid, referralCode);
+      }
+
       toast({
         title: "Success",
         description: "Successfully signed in!",
@@ -42,7 +53,13 @@ export const SignIn = () => {
 
     try {
       const result = await signInWithPopup(auth, provider);
-      console.log('Google sign-in successful:', result.user.email);
+
+      // If referral code exists, update Firestore
+      if (referralCode) {
+        console.log("logging")
+        await updateUserReferral(result.user.uid, referralCode);
+      }
+
       toast({
         title: "Success",
         description: "Successfully signed in with Google!",
@@ -71,6 +88,20 @@ export const SignIn = () => {
     }
   };
 
+  const updateUserReferral = async (userId: string, referralCode: string) => {
+    try {
+      const userRef = doc(db, 'users', userId); // Reference to the user's document
+      const userDoc = await getDoc(userRef);
+  
+      // If the user doesn't exist or doesn't have an `referral` field, update it
+      if (!userDoc.exists() || !userDoc.data()?.referral) {
+        await setDoc(userRef, { referral: referralCode }, { merge: true }); // Merge to avoid overwriting other fields
+      }
+    } catch (error) {
+      console.error('Error updating referral:', error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md animate-fadeIn">
@@ -96,6 +127,15 @@ export const SignIn = () => {
               required
               disabled={isLoading}
             />
+            {/* {referralCode && (
+              <Input
+                type="text"
+                placeholder="Referral Code"
+                value={referralCode}
+                readOnly
+                disabled
+              />
+            )} */}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>

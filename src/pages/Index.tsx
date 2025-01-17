@@ -4,7 +4,7 @@ import { MainNav } from '@/components/navigation/MainNav';
 import { Card } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Gift  } from 'lucide-react';
 import { SubCheck } from '@/components/subscription/SubCheck';
 
 
@@ -54,46 +54,42 @@ console.log("Loaded...")
             </div>
           </div>
 
-  {!subbie &&(
-    <>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-foreground">Why Upgrade?</h2>
-            <p className="text-muted-foreground">
-              Our Premium plan is designed for job seekers who want to go the extra mile. With advanced features like AI-optimized resumes and humanized writing, you’ll not only save time but also make a lasting impression on hiring managers. Plus, our priority support team is here to help.
-            </p>
-          </div>
+          {/* Invite Friends Section */}
+          {!subbie && (
+            <>
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold text-foreground">Unlock Premium for Free This February</h2>
+                <p className="text-muted-foreground">
+                  We’re celebrating the start of a new year by giving you the chance to unlock <strong>free Premium access for the entire month of February</strong>. Here’s how:
+                </p>
+                <ul className="list-disc list-inside text-muted-foreground">
+                  <li>Invite <strong>5 friends</strong> to join JobFly.</li>
+                  <li>Help them kickstart their job search with our free tools.</li>
+                  <li>Enjoy <strong>unlimited Premium features</strong> for the entire month of February.</li>
+                </ul>
+                <p className="text-muted-foreground">
+                  It’s our way of saying thank you for being part of the JobFly community and helping others succeed.
+                </p>
+              </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-foreground">Join Premium</h2>
-            <p className="text-muted-foreground">
-              This is more than just an upgrade—it’s a commitment to helping you succeed. Whether you stick with our free plan or unlock the full power of Premium, JobFly is here to support your journey every step of the way.
-            </p>
-          </div>
-
-          <div className="flex justify-center">
-            <Link 
-                          to="/account" 
-                        >
-
-                        
-            <Button className="w-full sm:w-auto">
-              <Send className="w-4 h-4 mr-2" />
-              Get Started Now
-            </Button>
-            </Link>
-          </div>
-
-         
-          </>
+              <div className="flex justify-center">
+                <Link to="/invite">
+                  <Button className="w-full sm:w-auto">
+                    <Gift className="w-4 h-4 mr-2" />
+                    Invite Friends & Unlock Premium
+                  </Button>
+                </Link>
+              </div>
+            </>
           )}
-           <p className="text-sm text-muted-foreground text-center">
-            Here’s to a year of growth, opportunities, and landing the job you deserve.
+
+          {/* Closing Message */}
+          <p className="text-sm text-muted-foreground text-center">
+            Here’s to a year of growth, opportunities, and landing the job you deserve. Together, let’s make 2024 your best year yet.
           </p>
         </Card>
       </div>
-      
     </div>
-  
   );
 };
 
