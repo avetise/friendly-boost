@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { Users, Share2, Copy } from 'lucide-react';
+import { Share2, Copy, Send } from 'lucide-react';
 
 interface InviteStats {
-  totalInvites: number;
   acceptedInvites: number;
 }
 
@@ -18,24 +17,21 @@ const Invite = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
-  const [emails, setEmails] = useState<string[]>([]); // For bulk invites
-  const [stats, setStats] = useState<InviteStats>({ totalInvites: 0, acceptedInvites: 0 });
+  const [emails, setEmails] = useState<string[]>([]); 
+  const [stats, setStats] = useState<InviteStats>({ acceptedInvites: 0 });
   const [isLoading, setIsLoading] = useState(false);
-  const referralLink = `https://jobfly.co/signin?ref=${user?.uid}`; // Unique referral link
+  const referralLink = `https://jobfly.co/signin?ref=${user?.uid}`;
 
   useEffect(() => {
     const fetchInviteStats = async () => {
       if (!user?.email) return;
 
       try {
-        const invitesQuery = query(collection(db, 'invites'), where('senderEmail', '==', user.email));
-        const invitesSnapshot = await getDocs(invitesQuery);
-
+        // Only query users who joined through referral
         const usersQuery = query(collection(db, 'users'), where('referral', '==', user.email));
         const usersSnapshot = await getDocs(usersQuery);
 
         setStats({
-          totalInvites: invitesSnapshot.size,
           acceptedInvites: usersSnapshot.size,
         });
       } catch (error) {
@@ -69,7 +65,7 @@ const Invite = () => {
   
       // Create the mailto link
       const subject = "Brace yourselves, interviews are coming!";
-      const body = `Hi\n\nI’ve been using JobFly to supercharge my job search, and I thought you’d could use it too! Use my referral link to get started:\n\n${referralLink}\n\nBest,\n${user?.displayName}`;
+      const body = `Hi\n\nI've been using JobFly to supercharge my job search, and I thought you'd could use it too! Use my referral link to get started:\n\n${referralLink}\n\nBest,\n${user?.displayName}`;
       const mailtoLink = `mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   
       // Open the user's email client
@@ -111,7 +107,6 @@ const Invite = () => {
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <div className="space-y-6">
           <div className="flex items-center space-x-2">
-            <Users className="h-6 w-6" />
             <h1 className="text-2xl font-bold">Invite Friends</h1>
           </div>
 
@@ -119,24 +114,30 @@ const Invite = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">Your Invites</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold">{stats.totalInvites}</div>
-                    <div className="text-sm text-muted-foreground">Total Invites</div>
-                  </div>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold">{stats.acceptedInvites}</div>
-                    <div className="text-sm text-muted-foreground">Total Joined</div>
-                  </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">{stats.acceptedInvites}</div>
+                  <div className="text-sm text-muted-foreground">Friends Joined</div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex space-x-2">
                   <Button variant="outline" onClick={handleShare}>
                     <Share2 className="w-4 h-4 mr-2" />
-                    Share Referral Link
+                    Share
                   </Button>
-                  <Button variant="outline" onClick={() => navigator.clipboard.writeText(referralLink)}>
+                  <Button variant="outline" onClick={() => {
+                    navigator.clipboard.writeText(referralLink);
+                    toast({
+                      title: "Copied!",
+                      description: "Referral link copied to clipboard",
+                    });
+                  }}>
                     <Copy className="w-4 h-4 mr-2" />
                     Copy Link
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    window.location.href = `mailto:?subject=${encodeURIComponent("Join me on JobFly!")}&body=${encodeURIComponent(`Check out JobFly: ${referralLink}`)}`;
+                  }}>
+                    <Send className="w-4 h-4 mr-2" />
+                    Email
                   </Button>
                 </div>
               </div>
@@ -158,8 +159,6 @@ const Invite = () => {
                     {isLoading ? 'Sending...' : 'Send Invite'}
                   </Button>
                 </form>
-
-                
               </div>
             </div>
           </Card>
