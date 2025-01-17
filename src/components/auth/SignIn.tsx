@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { useSearchParams } from 'react-router-dom'; // Or useNextRouter if using Next.js
+import { useSearchParams } from 'react-router-dom';
 
 export const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ export const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const referralCode = searchParams.get('ref'); // Get referral code from URL
+  const referralCode = searchParams.get('ref');
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,9 +23,9 @@ export const SignIn = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-      // If referral code exists, update Firestore
+      // If referral code exists, update user and create invite record
       if (referralCode) {
-        await updateUserReferral(userCredential.user.uid, referralCode);
+        await handleReferral(userCredential.user.uid, referralCode, userCredential.user.email || '');
       }
 
       toast({
@@ -54,10 +54,9 @@ export const SignIn = () => {
     try {
       const result = await signInWithPopup(auth, provider);
 
-      // If referral code exists, update Firestore
+      // If referral code exists, update user and create invite record
       if (referralCode) {
-        console.log("logging")
-        await updateUserReferral(result.user.uid, referralCode);
+        await handleReferral(result.user.uid, referralCode, result.user.email || '');
       }
 
       toast({
@@ -88,17 +87,41 @@ export const SignIn = () => {
     }
   };
 
-  const updateUserReferral = async (userId: string, referralCode: string) => {
+  const handleReferral = async (userId: string, referralCode: string, userEmail: string) => {
     try {
-      const userRef = doc(db, 'users', userId); // Reference to the user's document
+      // First, check if user already exists and has a referral
+      const userRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userRef);
-  
-      // If the user doesn't exist or doesn't have an `referral` field, update it
-      if (!userDoc.exists() || !userDoc.data()?.referral) {
-        await setDoc(userRef, { referral: referralCode }, { merge: true }); // Merge to avoid overwriting other fields
+      
+      if (!userDoc.exists()) {
+        // New user - create user document with referral
+        await setDoc(userRef, {
+          email: userEmail,
+          referral: referralCode,
+          joinDate: new Date(),
+          role: 'Standard'
+        });
+      } else if (!userDoc.data()?.referral) {
+        // Existing user without referral - update with referral
+        await setDoc(userRef, { referral: referralCode }, { merge: true });
+      } else {
+        // User already has a referral - do nothing
+        console.log('User already has a referral code');
+        return;
       }
+
+      // Create invite record
+      const inviteRef = collection(db, 'invites');
+      await addDoc(inviteRef, {
+        senderEmail: referralCode,
+        recipientEmail: userEmail,
+        status: 'joined',
+        joinedAt: new Date()
+      });
+
     } catch (error) {
-      console.error('Error updating referral:', error);
+      console.error('Error handling referral:', error);
+      throw error;
     }
   };
 
@@ -127,15 +150,6 @@ export const SignIn = () => {
               required
               disabled={isLoading}
             />
-            {/* {referralCode && (
-              <Input
-                type="text"
-                placeholder="Referral Code"
-                value={referralCode}
-                readOnly
-                disabled
-              />
-            )} */}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
