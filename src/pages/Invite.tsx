@@ -118,7 +118,7 @@ const Invite = () => {
                   <div className="text-2xl font-bold">{stats.acceptedInvites}</div>
                   <div className="text-sm text-muted-foreground">Friends Joined</div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-2 gap-4">
                   <Button variant="outline" onClick={handleShare}>
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
@@ -133,12 +133,7 @@ const Invite = () => {
                     <Copy className="w-4 h-4 mr-2" />
                     Copy Link
                   </Button>
-                  <Button variant="outline" onClick={() => {
-                    window.location.href = `mailto:?subject=${encodeURIComponent("Join me on JobFly!")}&body=${encodeURIComponent(`Check out JobFly: ${referralLink}`)}`;
-                  }}>
-                    <Send className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
+                  
                 </div>
               </div>
 
@@ -156,7 +151,7 @@ const Invite = () => {
                     required
                   />
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Sending...' : 'Send Invite'}
+                    {isLoading ? 'Sending...' : 'Send Email'}
                   </Button>
                 </form>
               </div>
