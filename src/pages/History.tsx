@@ -6,6 +6,8 @@ import { MainNav } from '@/components/navigation/MainNav';
 import { Card } from "@/components/ui/card";
 import { Link } from 'react-router-dom';
 import { Clock, ChevronRight } from 'lucide-react';
+import { handleFirebaseError } from '@/utils/firebaseErrorHandler';
+import { useToast } from "@/components/ui/use-toast";
 
 interface HistoryItem {
   id: string;
@@ -18,16 +20,20 @@ interface HistoryItem {
 const History = () => {
   const [coverLetters, setCoverLetters] = useState<HistoryItem[]>([]);
   const [resumes, setResumes] = useState<HistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Reusable function to fetch data from Firestore
   const fetchData = async (collectionName: string) => {
     if (!user?.email) {
-      console.error("User email is missing.");
+      console.log("No user email available yet");
       return [];
     }
 
     try {
+      console.log(`Fetching ${collectionName} for user:`, user.email);
+      
       const q = query(
         collection(db, collectionName),
         where("email", "==", user.email),
@@ -35,32 +41,78 @@ const History = () => {
       );
 
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt,
-      })) as HistoryItem[];
+      console.log(`Found ${snapshot.docs.length} documents in ${collectionName}`);
+      
+      const data = snapshot.docs.map((doc) => {
+        const docData = doc.data();
+        console.log(`Document ${doc.id} data:`, docData);
+        return {
+          id: doc.id,
+          ...docData,
+          createdAt: docData.createdAt,
+        };
+      }) as HistoryItem[];
 
       return data;
     } catch (error) {
       console.error(`Error fetching ${collectionName}:`, error);
+      const errorMessage = handleFirebaseError(error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to fetch ${collectionName}: ${errorMessage}`,
+      });
       return [];
     }
   };
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const coverLettersData = await fetchData("coverletters");
-      const resumesData = await fetchData("resumes");
-      setCoverLetters(coverLettersData);
-      setResumes(resumesData);
+      if (!user) {
+        console.log("No user available yet");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const [coverLettersData, resumesData] = await Promise.all([
+          fetchData("coverletters"),
+          fetchData("resumes")
+        ]);
+        
+        console.log("Fetched cover letters:", coverLettersData);
+        console.log("Fetched resumes:", resumesData);
+        
+        setCoverLetters(coverLettersData);
+        setResumes(resumesData);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+        const errorMessage = handleFirebaseError(error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: `Failed to fetch history: ${errorMessage}`,
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchHistory();
-  }, [user?.email]);
+  }, [user?.email, toast]);
 
   // Reusable component to render a list of items
   const renderHistoryList = (items: HistoryItem[], type: 'coverletter' | 'resume') => {
+    if (isLoading) {
+      return (
+        <Card className="p-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </Card>
+      );
+    }
+
     if (!items || items.length === 0) {
       return (
         <Card className="p-6 text-center">
