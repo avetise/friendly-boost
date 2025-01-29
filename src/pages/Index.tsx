@@ -58,12 +58,8 @@ console.log("Loaded...")
           {!subbie && (
             <>
                <h2 className="text-3xl font-bold mb-4">Why Upgrade?</h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-muted-foreground mb-8">
             Our Premium plan is designed for job seekers who want to go the extra mile. With advanced features like AI-optimized resumes and humanized writing, you’ll not only save time but also make a lasting impression on hiring managers. Plus, our premium support team is here to ensure you’re always on track.
-          </p>
-          <h2 className="text-3xl font-bold mb-4">Join the Freemium Revolution</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            This is more than just an upgrade—it’s a commitment to helping you succeed. Whether you stick with our free plan or unlock the full power of Premium, JobFly is here to support your journey every step of the way.
           </p>
           
         
@@ -80,7 +76,7 @@ console.log("Loaded...")
           )}
 
           {/* Closing Message */}
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-muted-foreground text-center">
             Here’s to a year of growth, opportunities, and landing the job you deserve. Together, let’s make 2025 your best year yet.
           </p>
         </Card>
