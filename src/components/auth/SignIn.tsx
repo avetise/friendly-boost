@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useSearchParams } from 'react-router-dom';
+import { SignUp } from './SignUp';
 
 export const SignIn = () => {
+  const [isSignIn, setIsSignIn] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -125,6 +127,10 @@ export const SignIn = () => {
     }
   };
 
+  if (!isSignIn) {
+    return <SignUp onToggleMode={() => setIsSignIn(true)} />;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md animate-fadeIn">
@@ -171,6 +177,15 @@ export const SignIn = () => {
           >
             {isLoading ? 'Signing in...' : 'Sign in with Google'}
           </Button>
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={() => setIsSignIn(false)}
+              className="text-primary"
+            >
+              Don't have an account? Sign up
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
