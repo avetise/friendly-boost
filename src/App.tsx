@@ -16,13 +16,13 @@ import View from "./pages/View";
 import Success from "./pages/Success";
 import Admin from "./pages/Admin";
 import Invite from "./pages/Invite";
+import ResetPassword from "./pages/ResetPassword";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { SubCheck } from '@/components/subscription/SubCheck';
 
 const queryClient = new QueryClient();
 console.log("App.tsx: Rendering...");
 
-// Protected Route wrapper component
 const ProtectedRoute = ({
   children,
   requiredRole,
@@ -54,7 +54,6 @@ const ProtectedRoute = ({
   return <>{children}</>;
 };
 
-
 const App = () => (
   <ThemeProvider>
     <BrowserRouter basename="/app">
@@ -63,6 +62,7 @@ const App = () => (
           <TooltipProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/generate"
                 element={
