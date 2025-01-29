@@ -16,8 +16,8 @@ import View from "./pages/View";
 import Success from "./pages/Success";
 import Admin from "./pages/Admin";
 import Invite from "./pages/Invite";
-import ResetPassword from "./pages/ResetPassword";
-import Actions from "./pages/Actions";
+import ResetPassword from "@/components/auth/ResetPassword";
+import Actions from "@/components/auth/Actions";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { SubCheck } from '@/components/subscription/SubCheck';
 
