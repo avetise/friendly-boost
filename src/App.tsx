@@ -17,6 +17,7 @@ import Success from "./pages/Success";
 import Admin from "./pages/Admin";
 import Invite from "./pages/Invite";
 import ResetPassword from "./pages/ResetPassword";
+import Actions from "./pages/Actions";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { SubCheck } from '@/components/subscription/SubCheck';
 
@@ -63,6 +64,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/actions" element={<Actions />} />
               <Route
                 path="/generate"
                 element={
