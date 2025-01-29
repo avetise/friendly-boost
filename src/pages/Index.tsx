@@ -57,26 +57,22 @@ console.log("Loaded...")
           {/* Invite Friends Section */}
           {!subbie && (
             <>
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-foreground">Unlock Premium for Free This February</h2>
-                <p className="text-muted-foreground">
-                  We’re celebrating the start of a new year by giving you the chance to unlock <strong>free Premium access for the entire month of February</strong>. Here’s how:
-                </p>
-                <ul className="list-disc list-inside text-muted-foreground">
-                  <li>Invite <strong>5 friends</strong> to join JobFly.</li>
-                  <li>Help them kickstart their job search with our free tools.</li>
-                  <li>Enjoy <strong>unlimited Premium features</strong> for the entire month of February.</li>
-                </ul>
-                <p className="text-muted-foreground">
-                  It’s our way of saying thank you for being part of the JobFly community and helping others succeed.
-                </p>
-              </div>
+               <h2 className="text-3xl font-bold mb-4">Why Upgrade?</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Our Premium plan is designed for job seekers who want to go the extra mile. With advanced features like AI-optimized resumes and humanized writing, you’ll not only save time but also make a lasting impression on hiring managers. Plus, our premium support team is here to ensure you’re always on track.
+          </p>
+          <h2 className="text-3xl font-bold mb-4">Join the Freemium Revolution</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            This is more than just an upgrade—it’s a commitment to helping you succeed. Whether you stick with our free plan or unlock the full power of Premium, JobFly is here to support your journey every step of the way.
+          </p>
+          
+        
 
               <div className="flex justify-center">
-                <Link to="/invite">
+              <Link to="/account">
                   <Button className="w-full sm:w-auto">
                     <Gift className="w-4 h-4 mr-2" />
-                    Invite Friends & Unlock Premium
+                    Get Started Now
                   </Button>
                 </Link>
               </div>
@@ -85,7 +81,7 @@ console.log("Loaded...")
 
           {/* Closing Message */}
           <p className="text-sm text-muted-foreground text-center">
-            Here’s to a year of growth, opportunities, and landing the job you deserve. Together, let’s make 2024 your best year yet.
+            Here’s to a year of growth, opportunities, and landing the job you deserve. Together, let’s make 2025 your best year yet.
           </p>
         </Card>
       </div>
