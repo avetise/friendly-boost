@@ -92,7 +92,7 @@ export const PricingPlans = () => {
         });
       } else {
         console.error('Cancellation failed:', response);
-        throw new Error(response.debug?.error || 'Failed to cancel subscription');
+        throw new Error('Failed to cancel subscription');
       }
     } catch (error) {
       console.error('Cancellation error:', error);
@@ -163,13 +163,7 @@ export const PricingPlans = () => {
     const currentPlanIndex = plans.findIndex(p => p.priceId === subscription.planId);
     const thisPlanIndex = plans.findIndex(p => p.priceId === plan.priceId);
     
-
-    console.log(currentPlanIndex)
-      console.log(thisPlanIndex)
-
-
     if (thisPlanIndex > currentPlanIndex) {
-      
       return {
         label: 'Upgrade',
         action: () => handleSubscribe(plan.priceId),

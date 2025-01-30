@@ -12,7 +12,8 @@ import {
   LogOut,
   ChartColumn,
   Menu,
-  Users
+  Users,
+  MessageSquare
 } from 'lucide-react';
 import { SubCheck } from '@/components/subscription/SubCheck';
 import { useState } from 'react';
@@ -46,7 +47,12 @@ export const MainNav = () => {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
             <NavItem to="/" icon={Home} label="Home" />
-            {(SubCheck()||isAdmin) && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
+            {(SubCheck()||isAdmin) && (
+              <>
+                <NavItem to="/resume" icon={Sparkles} label="Resume" />
+                <NavItem to="/interview" icon={MessageSquare} label="Interview" />
+              </>
+            )}
             <NavItem to="/generate" icon={FileText} label="Cover Letter" />
             <NavItem to="/history" icon={History} label="History" />
             <NavItem to="/invite" icon={Users} label="Invite" />
@@ -67,7 +73,12 @@ export const MainNav = () => {
             <nav className="absolute top-full left-0 right-0 bg-background border-t p-4 lg:hidden">
               <div className="flex flex-col space-y-4">
                 <NavItem to="/" icon={Home} label="Home" />
-                {(SubCheck()||isAdmin) && <NavItem to="/resume" icon={Sparkles} label="Resume" />}
+                {(SubCheck()||isAdmin) && (
+                  <>
+                    <NavItem to="/resume" icon={Sparkles} label="Resume" />
+                    <NavItem to="/interview" icon={MessageSquare} label="Interview" />
+                  </>
+                )}
                 <NavItem to="/generate" icon={FileText} label="Cover Letter" />
                 <NavItem to="/history" icon={History} label="History" />
                 <NavItem to="/invite" icon={Users} label="Invite" />
