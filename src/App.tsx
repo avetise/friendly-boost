@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Generate from "./pages/Generate";
 import Resume from "./pages/Resume";
+import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Referral from "./pages/Referral";
@@ -18,7 +19,7 @@ import Admin from "./pages/Admin";
 import Invite from "./pages/Invite";
 import ResetPassword from "@/components/auth/ResetPassword";
 import Actions from "@/components/auth/Actions";
-import { PricingPlans } from "@/components/subscription/PricingPlans";
+import { PricingPlans } from '@/components/subscription/PricingPlans';
 import { SubCheck } from '@/components/subscription/SubCheck';
 
 const queryClient = new QueryClient();
@@ -78,6 +79,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requiredPlan="price_1QbOq6BsWcSPhj7F2R2003OT">
                     <Resume />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/interview"
+                element={
+                  <ProtectedRoute requiredPlan="price_1QbOq6BsWcSPhj7F2R2003OT">
+                    <Interview />
                   </ProtectedRoute>
                 }
               />
