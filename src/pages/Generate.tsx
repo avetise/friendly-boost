@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MainNav } from '@/components/navigation/MainNav';
 import { useToast } from '@/components/ui/use-toast';
@@ -88,12 +88,20 @@ const Generate = () => {
         "navigated": "managed",
         "navigation": "management",
 
+
+        //
+        "enthralled": "excited",
+        //"respected ": "", 
+        "your ": "the ",
+        "resonates ": "matches",
+
         // Expanded variations for "realm"
         "realm": "field",
 
         // Expanded variations for "esteemed"
-        "esteemed": "respected",
-
+        "esteemed ": "",
+        "respected ": "",
+        "multifaceted ": "",
         // Expanded variations for "journey"
         "journey": "experience",
 
@@ -141,7 +149,7 @@ const Generate = () => {
 
       // Function to perform literal replacements
       function replaceText(message: string, user: { displayName?: string; email?: string }): string {
-      
+        console.log("replaced")
         // Replace cringe words/phrases using the replacement array
         Object.keys(replacementArray).forEach((key) => {
           const regex = new RegExp(`\\b${key}\\b`, 'gi'); // Match whole words only

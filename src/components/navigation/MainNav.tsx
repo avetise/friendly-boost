@@ -30,11 +30,15 @@ export const MainNav = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-3">
         <div className="flex h-14 items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary">
-              JobFly
-            </span>
-          </Link>
+        <Link to="/" className="flex items-center space-x-2">
+  <span className="text-2xl font-bold text-primary">
+    JobFly {SubCheck() && (
+      <span>
+        <span className="text-sm align-top text-purple-500">PREMIUM</span>
+      </span>
+    )}
+  </span>
+</Link>
 
           {/* Mobile Menu Toggle */}
           <button 
@@ -47,13 +51,13 @@ export const MainNav = () => {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
             <NavItem to="/" icon={Home} label="Home" />
+            <NavItem to="/generate" icon={FileText} label="Cover Letter" />
             {(SubCheck()||isAdmin) && (
               <>
                 <NavItem to="/resume" icon={Sparkles} label="Resume" />
                 <NavItem to="/interview" icon={MessageSquare} label="Interview" />
               </>
             )}
-            <NavItem to="/generate" icon={FileText} label="Cover Letter" />
             <NavItem to="/history" icon={History} label="History" />
             <NavItem to="/invite" icon={Users} label="Invite" />
             <NavItem to="/account" icon={User2} label="Account" />

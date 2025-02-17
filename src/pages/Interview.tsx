@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { SubCheck } from '@/components/subscription/SubCheck';
 
 interface ValidationResult {
   valid: boolean;
@@ -20,6 +21,12 @@ const Interview = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const { toast } = useToast();
+
+
+
+    
+    const subbie = SubCheck()
+    console.log(subbie)
 
   const validateInputs = (arg: string): ValidationResult => {
     const disallowed = ["ignore", "disregard", "dismiss", "skip", "omit", "defy", "disobey", "leave out", "bypass", "overlook", "neglect"];
@@ -76,7 +83,7 @@ const Interview = () => {
             "Content-Type": "application/json",
             "Authorization": `ApiKey ${import.meta.env.VITE_API_KEY}`
           },
-          body: JSON.stringify({ jd })
+          body: JSON.stringify({ jd, sub:subbie  })
         });
 
         if (!response.ok) {

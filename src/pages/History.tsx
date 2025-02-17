@@ -81,7 +81,7 @@ const History = () => {
         ]);
         
         console.log("Fetched cover letters:", coverLettersData);
-        console.log("Fetched resumes:", resumesData);
+        //console.log("Fetched resumes:", resumesData);
         
         setCoverLetters(coverLettersData);
         setResumes(resumesData);

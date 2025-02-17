@@ -20,7 +20,7 @@ const plans = [
     name: 'Premium',
     price: '$9.99',
     description: 'Advanced resumes and cover letters',
-    features: ['Advanced AI Cover letters', 'Advanced AI Resumes', 'Humanized and removal of "AI-words"', 'Premium Support'],
+    features: ['Advanced AI Cover letters', 'AI Resumes & Interview Prep', 'Humanized and removal of "AI-words"', 'Premium Support'],
     priceId: 'price_1QbOq6BsWcSPhj7F2R2003OT',
   }
 ];
