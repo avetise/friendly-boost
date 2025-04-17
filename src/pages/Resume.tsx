@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MainNav } from '@/components/navigation/MainNav';
 import { useToast } from '@/components/ui/use-toast';
@@ -24,28 +24,6 @@ const Resume = () => {
   
   const subbie = SubCheck()
   console.log(subbie)
-  /* useEffect(() => {
-    const updateReferralCode = async () => {
-      if (!user) return;
-
-      const referralCode = localStorage.getItem('referralCode');
-      if (referralCode) {
-        const userDocRef = doc(db, 'users', user.uid);
-        try {
-          await updateDoc(userDocRef, { referral: referralCode });
-          localStorage.removeItem('referralCode');
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to update referral code.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-
-    updateReferralCode();
-  }, [user, toast]); */
 
   const handleCheckboxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUseSameResume(e.target.checked);

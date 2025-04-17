@@ -19,43 +19,50 @@ console.log("Loaded...")
     <div className="min-h-screen bg-background">
       <MainNav />
       <div className="container max-w-3xl mx-auto px-4 py-8">
-        <Card className="p-6 space-y-6">
-          {/* Important AI Update Section */}
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-foreground">Important AI Service Update</h2>
-            <Card className="p-4 bg-muted/50">
-              <p className="text-muted-foreground">
-              Due to disruptions to some AI backend services we use, you may experience occasional service interruptions. Our team is implementing improvements to ensure a more stable experience. If you encounter any issues, please reach out to support@jobfly.co.
-              </p>
-            </Card>
-          </div>
-  
-          {/* Premium Section - Only shown to non-subscribers */}
-          {!subbie && (
-            <div className="space-y-2">
-              <h2 className="text-lg font-bold text-foreground">Premium Features Available</h2>
-              <Card className="p-4 bg-muted/50">
-                <p className="text-muted-foreground mb-4">
-                  Upgrade to Premium for advanced AI cover letters, resumes, and humanized writing at $9.99/month.
-                </p>
-                <div className="flex justify-start">
-                  <Link to="/account">
-                    <Button className="w-auto">
-                      <Gift className="w-4 h-4 mr-2" />
-                      Upgrade Now
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </div>
-          )}
-  
-          {/* Closing Message */}
-          <p className="text-muted-foreground text-center">
-            Here's to empowering your job search journey. Let's make your next career move count.
+  <Card className="p-6 space-y-6">
+    
+
+   {/* Easter Cheer for Job Seekers 🐣 */}  
+<div className="space-y-2">  
+  <h2 className="text-xl font-bold text-foreground">Happy Easter, Job Hunters! 🐰✨</h2>  
+  <Card className="p-4 bg-muted/50">  
+    <p className="text-muted-foreground">  
+      This Easter, we hope your job search is filled with fresh opportunities and bright beginnings.  
+      Just like eggs hidden in the grass, the perfect role might be closer than you think—keep going!  
+      <span className="block mt-2 font-medium text-foreground">  
+        Wishing you confidence, luck, and a little extra magic this season. 🎉  
+      </span>  
+    </p>  
+  </Card>  
+</div>  
+
+    {/* Premium Section - Only shown to non-subscribers */}
+    {!subbie && (
+      <div className="space-y-2">
+        <h2 className="text-lg font-bold text-foreground">Unlock Premium Features</h2>
+        <Card className="p-4 bg-muted/50">
+          <p className="text-muted-foreground mb-4">
+            Upgrade to Premium for advanced AI cover letters, resumes, interview prep and humanized writing at just $9.99/month.
           </p>
+          <div className="flex justify-start">
+            <Link to="/account">
+              <Button className="w-auto">
+                <Gift className="w-4 h-4 mr-2" />
+                Upgrade Now
+              </Button>
+            </Link>
+          </div>
         </Card>
       </div>
+    )}
+
+    {/* Closing Message */}
+    <p className="text-muted-foreground text-center">
+          We're constantly building new features to make your job hunt a breeze. Stay tuned for more exciting updates!
+        
+    </p>
+  </Card>
+</div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import ReactMarkdown from 'react-markdown';
 
 interface DocumentData {
   message: string;
@@ -64,7 +65,7 @@ const View = ({ collection }: ViewProps) => {
   return (
     <div className="min-h-screen bg-background">
       <MainNav />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container max-w-3xl mx-auto px-4 py-8">
         <Card className="p-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <h2 className="text-2xl font-bold">
@@ -79,11 +80,76 @@ const View = ({ collection }: ViewProps) => {
               <Copy className="h-4 w-4" />
             </Button>
           </CardHeader>
-          <CardContent>
-            <div className="whitespace-pre-wrap rounded-lg border bg-muted p-4">
-              {record}
-            </div>
-          </CardContent>
+          
+            <div className="p-4 bg-card">
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="text-2xl font-bold mt-6 mb-4">{children}</h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>
+                            ),
+                            p: ({ children }) => (
+                              <p className="mb-4 leading-relaxed">{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>
+                            ),
+                            li: ({ children }) => (
+                              <li className="mb-1">{children}</li>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote className="border-l-4 border-primary pl-4 italic my-4">
+                                {children}
+                              </blockquote>
+                            ),
+                            code: ({ inline, children }) => (
+                              inline ? 
+                                <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">
+                                  {children}
+                                </code> :
+                                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                                  <code className="text-sm font-mono">{children}</code>
+                                </pre>
+                            ),
+                            a: ({ href, children }) => (
+                              <a 
+                                href={href} 
+                                className="text-primary hover:underline"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                              >
+                                {children}
+                              </a>
+                            ),
+                            table: ({ children }) => (
+                              <div className="overflow-x-auto my-4">
+                                <table className="min-w-full divide-y divide-border">
+                                  {children}
+                                </table>
+                              </div>
+                            ),
+                            th: ({ children }) => (
+                              <th className="px-4 py-2 bg-muted font-medium">{children}</th>
+                            ),
+                            td: ({ children }) => (
+                              <td className="px-4 py-2 border-t border-border">{children}</td>
+                            ),
+                          }}
+                        >
+                          {record}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+          
         </Card>
       </div>
     </div>
